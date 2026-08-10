@@ -71,6 +71,11 @@ function BookingContent() {
   const [phone, setPhone] = useState("");
   const [requests, setRequests] = useState("");
 
+  // Field errors state
+  const [fullNameError, setFullNameError] = useState("");
+  const [emailError, setEmailError] = useState("");
+  const [phoneError, setPhoneError] = useState("");
+
   // Submission & Confirmation state
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -81,6 +86,35 @@ function BookingContent() {
   useEffect(() => {
     trackBookingStarted("booking_page", initialRoomId, initialBranchId);
   }, [initialRoomId, initialBranchId]);
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    // Strictly filter out non-phone characters (letters, symbols like ; or ,)
+    const val = e.target.value;
+    const sanitized = val.replace(/[^0-9+\-\s()]/g, "");
+    setPhone(sanitized);
+
+    // Provide immediate feedback if user attempted to type letters
+    if (val !== sanitized) {
+      setPhoneError("Phone number can only contain digits and valid phone symbols (+, -, ()).");
+    } else if (sanitized.replace(/[^0-9]/g, "").length >= 6) {
+      setPhoneError("");
+    }
+  };
+
+  const handleFullNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFullName(e.target.value);
+    if (e.target.value.trim().length >= 2) {
+      setFullNameError("");
+    }
+  };
+
+  const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setEmail(e.target.value);
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (emailRegex.test(e.target.value.trim())) {
+      setEmailError("");
+    }
+  };
 
   const handleRoomChange = (roomId: string) => {
     setSelectedRoomId(roomId);
@@ -115,11 +149,39 @@ function BookingContent() {
   const grandTotal = baseTotal + luxuryTax;
 
   const validateForm = () => {
-    if (!fullName.trim()) return "Please enter your full name.";
+    let nameErr = "";
+    let mailErr = "";
+    let phErr = "";
+
+    if (!fullName.trim()) {
+      nameErr = "Please enter your full name.";
+    }
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email.trim())) return "Please enter a valid email address.";
+    if (!email.trim() || !emailRegex.test(email.trim())) {
+      mailErr = "Please enter a valid email address.";
+    }
+
+    const phoneDigitsOnly = phone.replace(/[^0-9]/g, "");
     const phoneRegex = /^\+?[0-9\s\-\(\)]{6,20}$/;
-    if (!phone.trim() || !phoneRegex.test(phone.trim())) return "Please enter a valid contact phone number (at least 6 digits).";
+    if (!phone.trim()) {
+      phErr = "Please enter your phone number.";
+    } else if (phoneDigitsOnly.length < 6 || !phoneRegex.test(phone.trim())) {
+      phErr = "Please enter a valid contact phone number (digits only, at least 6 numbers).";
+    }
+
+    setFullNameError(nameErr);
+    setEmailError(mailErr);
+    setPhoneError(phErr);
+
+    if (nameErr || mailErr || phErr) {
+      // Focus first error input field
+      if (nameErr) document.getElementById("fullNameInput")?.focus();
+      else if (mailErr) document.getElementById("emailInput")?.focus();
+      else if (phErr) document.getElementById("phoneInput")?.focus();
+      return "Please correct the highlighted fields below before submitting.";
+    }
+
     const start = new Date(checkIn);
     const end = new Date(checkOut);
     if (isNaN(start.getTime()) || isNaN(end.getTime())) return "Please select valid check-in and check-out dates.";
@@ -406,10 +468,18 @@ function BookingContent() {
                 required
                 value={fullName}
                 onFocus={() => trackGuestDetailsStarted(selectedRoomId, nights, guests)}
-                onChange={(e) => setFullName(e.target.value)}
+                onChange={handleFullNameChange}
                 placeholder="Elena Rostova"
-                className="bg-bg-dark border border-border-dark rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full placeholder-text-gray/30"
+                className={`bg-bg-dark border rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none transition-colors w-full placeholder-text-gray/30 ${
+                  fullNameError ? "border-red-500/80 bg-red-500/5 focus:border-red-500" : "border-border-dark focus:border-gold"
+                }`}
               />
+              {fullNameError && (
+                <span className="text-[10px] text-red-400 font-sans font-medium flex items-center mt-1">
+                  <AlertCircle size={10} className="mr-1 inline shrink-0" />
+                  {fullNameError}
+                </span>
+              )}
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -424,10 +494,18 @@ function BookingContent() {
                   type="email"
                   required
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={handleEmailChange}
                   placeholder="elena@writer.com"
-                  className="bg-bg-dark border border-border-dark rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full placeholder-text-gray/30"
+                  className={`bg-bg-dark border rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none transition-colors w-full placeholder-text-gray/30 ${
+                    emailError ? "border-red-500/80 bg-red-500/5 focus:border-red-500" : "border-border-dark focus:border-gold"
+                  }`}
                 />
+                {emailError && (
+                  <span className="text-[10px] text-red-400 font-sans font-medium flex items-center mt-1">
+                    <AlertCircle size={10} className="mr-1 inline shrink-0" />
+                    {emailError}
+                  </span>
+                )}
               </div>
 
               {/* Phone Number */}
@@ -441,10 +519,18 @@ function BookingContent() {
                   type="tel"
                   required
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
+                  onChange={handlePhoneChange}
                   placeholder="+91 99999 55555"
-                  className="bg-bg-dark border border-border-dark rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full placeholder-text-gray/30"
+                  className={`bg-bg-dark border rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none transition-colors w-full placeholder-text-gray/30 ${
+                    phoneError ? "border-red-500/80 bg-red-500/5 focus:border-red-500" : "border-border-dark focus:border-gold"
+                  }`}
                 />
+                {phoneError && (
+                  <span className="text-[10px] text-red-400 font-sans font-medium flex items-center mt-1">
+                    <AlertCircle size={10} className="mr-1 inline shrink-0" />
+                    {phoneError}
+                  </span>
+                )}
               </div>
             </div>
 

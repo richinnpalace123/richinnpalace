@@ -50,7 +50,7 @@ export const rooms: Room[] = [
   {
     id: "haveli-room",
     slug: "haveli-room",
-    name: "T.Nagar",
+    name: "Haveli Chamber",
     tag: "COURTYARD VIEW",
     price: 12800,
     priceDisplay: "₹12,800",
@@ -120,7 +120,7 @@ export const rooms: Room[] = [
   {
     id: "garden-suite",
     slug: "garden-suite",
-    name: "Vadapalani",
+    name: "Garden Suite",
     tag: "PRIVATE GARDEN",
     price: 18500,
     priceDisplay: "₹18,500",
@@ -185,7 +185,7 @@ export const rooms: Room[] = [
   {
     id: "signature-sanctuary",
     slug: "signature-sanctuary",
-    name: "T.Nagar",
+    name: "Signature Sanctuary",
     tag: "PLUNGE POOL",
     price: 26000,
     priceDisplay: "₹26,000",
