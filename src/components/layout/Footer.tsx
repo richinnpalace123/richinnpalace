@@ -1,7 +1,8 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
-import { Mail, Phone, MapPin } from "lucide-react";
+import { Mail, Phone, MapPin, Plus, Minus } from "lucide-react";
 import { hotelDetails, rooms } from "@/lib/data";
 import { usePathname } from "next/navigation";
 import { trackPhoneClick, trackEmailClick } from "@/lib/analytics";
@@ -10,14 +11,27 @@ export default function Footer() {
   const currentYear = new Date().getFullYear();
   const pathname = usePathname();
 
-  if (pathname?.startsWith("/rooms")) {
+  const [openSections, setOpenSections] = useState<Record<string, boolean>>({
+    branches: false,
+    sanctuary: false,
+    enquiries: false,
+  });
+
+  const toggleSection = (section: string) => {
+    setOpenSections((prev) => ({
+      ...prev,
+      [section]: !prev[section],
+    }));
+  };
+
+  if (pathname?.startsWith("/rooms") || pathname === "/booking") {
     return null;
   }
 
   return (
     <footer className="bg-surface-dark border-t border-border-dark text-text-offwhite font-sans mt-auto">
-      <div className="max-w-7xl mx-auto px-6 md:px-12 py-16 md:py-24">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-8">
+      <div className="max-w-7xl mx-auto px-6 md:px-12 pt-16 pb-32 md:py-24">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-8">
           
           {/* Brand Info */}
           <div className="space-y-6 lg:col-span-1">
@@ -77,9 +91,17 @@ export default function Footer() {
           </div>
 
           {/* Branches List Column */}
-          <div className="space-y-4">
-            <h4 className="text-xs uppercase tracking-[0.2em] text-gold font-medium">Our Branches</h4>
-            <ul className="space-y-3.5">
+          <div className="border-b border-border-dark/40 pb-5 md:border-b-0 md:pb-0 md:space-y-4">
+            <button
+              onClick={() => toggleSection("branches")}
+              className="w-full flex items-center justify-between text-left focus:outline-none md:pointer-events-none md:cursor-default py-2 md:py-0"
+            >
+              <h4 className="text-xs uppercase tracking-[0.2em] text-gold font-medium">Our Branches</h4>
+              <span className="text-text-gray md:hidden">
+                {openSections.branches ? <Minus size={14} /> : <Plus size={14} />}
+              </span>
+            </button>
+            <ul className={`space-y-3.5 mt-3 md:mt-4 transition-all duration-350 md:block ${openSections.branches ? "block" : "hidden"}`}>
               {rooms.flatMap(r => r.branches).map((branch) => {
                 const associatedRoom = rooms.find(r => r.branches.some(b => b.id === branch.id));
                 return (
@@ -98,9 +120,17 @@ export default function Footer() {
           </div>
 
           {/* Quick Navigation */}
-          <div className="space-y-4">
-            <h4 className="text-xs uppercase tracking-[0.2em] text-gold font-medium">Sanctuary</h4>
-            <ul className="space-y-2.5">
+          <div className="border-b border-border-dark/40 pb-5 md:border-b-0 md:pb-0 md:space-y-4">
+            <button
+              onClick={() => toggleSection("sanctuary")}
+              className="w-full flex items-center justify-between text-left focus:outline-none md:pointer-events-none md:cursor-default py-2 md:py-0"
+            >
+              <h4 className="text-xs uppercase tracking-[0.2em] text-gold font-medium">Sanctuary</h4>
+              <span className="text-text-gray md:hidden">
+                {openSections.sanctuary ? <Minus size={14} /> : <Plus size={14} />}
+              </span>
+            </button>
+            <ul className={`space-y-2.5 mt-3 md:mt-4 transition-all duration-350 md:block ${openSections.sanctuary ? "block" : "hidden"}`}>
               <li>
                 <Link href="/" className="text-xs tracking-[0.1em] text-text-gray hover:text-gold transition-colors duration-300">
                   Home
@@ -135,9 +165,17 @@ export default function Footer() {
           </div>
 
           {/* Contact Info */}
-          <div className="space-y-4">
-            <h4 className="text-xs uppercase tracking-[0.2em] text-gold font-medium">Enquiries</h4>
-            <ul className="space-y-3 text-xs tracking-[0.1em] text-text-gray font-light">
+          <div className="border-b border-border-dark/40 pb-5 md:border-b-0 md:pb-0 md:space-y-4">
+            <button
+              onClick={() => toggleSection("enquiries")}
+              className="w-full flex items-center justify-between text-left focus:outline-none md:pointer-events-none md:cursor-default py-2 md:py-0"
+            >
+              <h4 className="text-xs uppercase tracking-[0.2em] text-gold font-medium">Enquiries</h4>
+              <span className="text-text-gray md:hidden">
+                {openSections.enquiries ? <Minus size={14} /> : <Plus size={14} />}
+              </span>
+            </button>
+            <ul className={`space-y-3 text-xs tracking-[0.1em] text-text-gray font-light mt-3 md:mt-4 transition-all duration-350 md:block ${openSections.enquiries ? "block" : "hidden"}`}>
               <li className="flex items-center space-x-3">
                 <Phone size={13} className="text-gold shrink-0" />
                 <a

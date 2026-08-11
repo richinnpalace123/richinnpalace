@@ -81,7 +81,7 @@ export default function FAQSection() {
   };
 
   return (
-    <section id="faq" className="py-24 md:py-32 bg-bg-dark border-b border-border-dark">
+    <section id="faq" className="py-12 md:py-32 bg-bg-dark border-b border-border-dark">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(faqJsonLd) }}

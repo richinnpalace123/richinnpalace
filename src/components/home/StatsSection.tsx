@@ -27,7 +27,7 @@ export default function StatsSection() {
   };
 
   return (
-    <section id="stats" className="py-12 md:py-18 bg-bg-dark border-border-dark relative z-10">
+    <section id="stats" className="py-8 md:py-18 bg-bg-dark border-border-dark relative z-10">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <motion.div
           variants={containerVariants}

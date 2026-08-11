@@ -24,17 +24,17 @@ export default function TestimonialsSection() {
   };
 
   return (
-    <section id="reviews" className="py-12 md:py-18 bg-bg-dark border-b border-border-dark">
+    <section id="reviews" className="py-8 md:py-18 bg-bg-dark border-b border-border-dark">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
 
         {/* Section Title */}
         <div className="mb-16">
-          <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-sans font-medium mb-3 block">
+          <h2 className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-sans font-medium mb-3 block">
             02 · REVIEWS & STORIES
-          </span>
-          <h2 className="font-serif text-3xl md:text-5xl text-text-offwhite font-light tracking-wide">
-            Our guests, in their own words.
           </h2>
+          <h4 className="font-serif text-3xl md:text-5xl text-text-offwhite font-light tracking-wide">
+            Our guests, in their own words.
+          </h4>
         </div>
 
         {/* Testimonials Slider/Grid */}
@@ -43,13 +43,13 @@ export default function TestimonialsSection() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="grid grid-cols-1 md:grid-cols-3 gap-8"
+          className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-6 px-6 md:mx-0 md:px-0 pb-6 md:pb-0"
         >
           {testimonials.map((t, idx) => (
             <motion.div
               key={idx}
               variants={itemVariants}
-              className="bg-surface-dark border border-border-dark/60 rounded-2xl p-8 md:p-10 flex flex-col justify-between space-y-8 hover:border-gold/30 transition-colors duration-500 group"
+              className="w-[85vw] sm:w-[50vw] md:w-auto shrink-0 snap-start snap-always bg-surface-dark border border-border-dark/60 rounded-2xl p-8 md:p-10 flex flex-col justify-between space-y-8 hover:border-gold/30 transition-colors duration-500 group"
             >
               {/* Star Rating & Verified Badge */}
               <div className="flex items-center justify-between">

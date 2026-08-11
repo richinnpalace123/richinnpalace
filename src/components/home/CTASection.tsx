@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 
 export default function CTASection() {
   return (
-    <section className="py-28 md:py-36 bg-bg-dark border-b border-border-dark relative overflow-hidden flex items-center justify-center">
+    <section className="py-14 md:py-36 bg-bg-dark border-b border-border-dark relative overflow-hidden flex items-center justify-center">
       {/* Background radial highlight */}
       <div className="absolute w-[500px] h-[500px] rounded-full bg-gold/5 blur-[120px] pointer-events-none -z-10" />
 

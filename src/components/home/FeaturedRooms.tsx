@@ -78,7 +78,7 @@ export default function FeaturedRooms() {
   };
 
   return (
-    <section id="featured-rooms" className="py-24 md:py-32 bg-bg-dark font-sans relative overflow-hidden">
+    <section id="featured-rooms" className="pt-8 pb-8 md:py-32 bg-bg-dark font-sans relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         {/* Section Header */}
         <motion.div
@@ -88,13 +88,13 @@ export default function FeaturedRooms() {
           viewport={{ once: true, margin: "-100px" }}
           className="mb-6 md:mb-10 text-left"
         >
-          <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-sans font-medium mb-3 block">
+          <h2 className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-sans font-medium mb-3 block">
             02 · FEATURED STAYS
-          </span>
-          <h2 className="font-serif text-3xl md:text-5xl text-text-offwhite font-light tracking-wide leading-tight max-w-xl">
+          </h2>
+          <h4 className="font-serif text-3xl md:text-5xl text-text-offwhite font-light tracking-wide leading-tight max-w-xl">
             Rooms that keep <br className="hidden md:inline" />
             their own light.
-          </h2>
+          </h4>
         </motion.div>
 
         {/* Carousel on Mobile, Grid on Desktop */}
@@ -185,7 +185,7 @@ export default function FeaturedRooms() {
         </div>
 
         {/* Explore All Stays CTA */}
-        <div className="text-center mt-16 md:mt-20">
+        <div className="text-center mt-10 md:mt-20">
           <Link
             href="/rooms"
             className="inline-flex items-center space-x-3 text-xs uppercase tracking-[0.2em] text-gold hover:text-text-offwhite transition-colors duration-300 group"

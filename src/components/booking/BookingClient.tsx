@@ -294,13 +294,21 @@ function BookingContent() {
       {/* Left Column: Form entry */}
       <div className="lg:col-span-7 space-y-8">
         {/* Title */}
-        <div className="space-y-2">
-          <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-medium block">
-            Bespoke Reservation
-          </span>
-          <h1 className="font-serif text-3xl md:text-4xl text-text-offwhite font-light tracking-wide">
-            Reserve Your Stay
-          </h1>
+        <div className="space-y-4 border-b border-border-dark/45 pb-5">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="space-y-1">
+              <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-medium block">
+                Bespoke Reservation
+              </span>
+              <h1 className="font-serif text-3xl md:text-4xl text-text-offwhite font-light tracking-wide">
+                Reserve Your Stay
+              </h1>
+            </div>
+            <div className="flex items-center space-x-2 bg-gold/5 border border-gold/15 px-3 py-1.5 rounded-full shrink-0">
+              <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
+              <span className="text-[9px] uppercase tracking-[0.15em] text-gold font-medium">Direct Concierge Connection</span>
+            </div>
+          </div>
           <p className="font-sans text-xs text-text-gray font-light leading-relaxed">
             Submit your dates and preferences. Our reservation team will review availability and contact you promptly to finalize your stay.
           </p>
@@ -338,122 +346,10 @@ function BookingContent() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Section 1: Dates & Sanctuary Selection */}
+          {/* Section: Contact Information */}
           <div className="bg-surface-dark/30 border border-border-dark/60 rounded-2xl p-6 space-y-4">
             <h3 className="text-xs uppercase tracking-[0.2em] text-gold font-medium mb-2">
-              1. Stay Details
-            </h3>
-
-            {/* Room selector */}
-            <div className="flex flex-col space-y-1.5">
-              <label htmlFor="roomSelector" className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium">
-                Select Chamber or Suite
-              </label>
-              <select
-                id="roomSelector"
-                value={selectedRoomId}
-                onChange={(e) => handleRoomChange(e.target.value)}
-                className="bg-bg-dark border border-border-dark rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full cursor-pointer appearance-none animate-none"
-              >
-                {rooms.map((room) => (
-                  <option key={room.id} value={room.id}>
-                    {room.name} — {formatPrice(room.price)} / night
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Branch selector */}
-            {selectedRoom && selectedRoom.branches && selectedRoom.branches.length > 0 && (
-              <div className="flex flex-col space-y-1.5 mt-4">
-                <label htmlFor="branchSelector" className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium">
-                  Select Branch Location
-                </label>
-                <select
-                  id="branchSelector"
-                  value={selectedBranchId}
-                  onChange={(e) => setSelectedBranchId(e.target.value)}
-                  className="bg-bg-dark border border-border-dark rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full cursor-pointer appearance-none animate-none"
-                >
-                  {selectedRoom.branches.map((branch) => (
-                    <option key={branch.id} value={branch.id}>
-                      {branch.name.split(" — ")[1] || branch.name} ({branch.address.split(",")[0]})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
-
-            {/* Dates */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col space-y-1.5">
-                <label htmlFor="checkIn" className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium">
-                  Check In
-                </label>
-                <input
-                  id="checkIn"
-                  type="date"
-                  value={checkIn}
-                  min={getTomorrowString(0)}
-                  onChange={(e) => {
-                    setCheckIn(e.target.value);
-                    const nextDay = new Date(e.target.value);
-                    nextDay.setDate(nextDay.getDate() + 1);
-                    const nextDayStr = nextDay.toISOString().split("T")[0];
-                    if (checkOut <= e.target.value) {
-                      setCheckOut(nextDayStr);
-                    }
-                    trackDateSelected(nights);
-                  }}
-                  className="bg-bg-dark border border-border-dark rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full [color-scheme:dark]"
-                />
-              </div>
-
-              <div className="flex flex-col space-y-1.5">
-                <label htmlFor="checkOut" className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium">
-                  Check Out
-                </label>
-                <input
-                  id="checkOut"
-                  type="date"
-                  value={checkOut}
-                  min={checkIn ? (() => {
-                    const nextDay = new Date(checkIn);
-                    nextDay.setDate(nextDay.getDate() + 1);
-                    return nextDay.toISOString().split("T")[0];
-                  })() : getTomorrowString(1)}
-                  onChange={(e) => {
-                    setCheckOut(e.target.value);
-                    trackDateSelected(nights);
-                  }}
-                  className="bg-bg-dark border border-border-dark rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full [color-scheme:dark]"
-                />
-              </div>
-            </div>
-
-            {/* Guests */}
-            <div className="flex flex-col space-y-1.5">
-              <label htmlFor="guestsSelector" className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium">
-                Guests
-              </label>
-              <select
-                id="guestsSelector"
-                value={guests}
-                onChange={(e) => setGuests(parseInt(e.target.value, 10))}
-                className="bg-bg-dark border border-border-dark rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full cursor-pointer appearance-none"
-              >
-                <option value="1">1 Guest</option>
-                <option value="2">2 Guests</option>
-                <option value="3">3 Guests</option>
-                <option value="4">4 Guests</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Section 2: Contact Information */}
-          <div className="bg-surface-dark/30 border border-border-dark/60 rounded-2xl p-6 space-y-4">
-            <h3 className="text-xs uppercase tracking-[0.2em] text-gold font-medium mb-2">
-              2. Guest Contact
+              Guest Contact Details
             </h3>
 
             {/* Full Name */}
@@ -655,7 +551,35 @@ function BookingContent() {
             </div>
           </div>
 
-          {/* Policies Badge removed */}
+          {/* Trust Banner / Booking Direct Benefits */}
+          <div className="bg-surface-dark/45 border border-border-dark/60 rounded-2xl p-6 space-y-4 shadow-lg">
+            <h4 className="text-[10px] uppercase tracking-[0.2em] text-gold font-medium">
+              Direct Reservation Privileges
+            </h4>
+            <ul className="space-y-3.5 text-xs text-text-gray font-light">
+              <li className="flex items-start space-x-2.5">
+                <span className="text-gold mt-0.5 font-sans font-medium text-sm">✓</span>
+                <div>
+                  <span className="font-medium text-text-offwhite block text-[11px] uppercase tracking-wider">Best Rate Guarantee</span>
+                  <span className="text-[10.5px] text-text-gray/70 leading-relaxed block mt-0.5">No hidden booking fees, commission markups, or service charges.</span>
+                </div>
+              </li>
+              <li className="flex items-start space-x-2.5">
+                <span className="text-gold mt-0.5 font-sans font-medium text-sm">✓</span>
+                <div>
+                  <span className="font-medium text-text-offwhite block text-[11px] uppercase tracking-wider">Flexible 24-Hour Stay</span>
+                  <span className="text-[10.5px] text-text-gray/70 leading-relaxed block mt-0.5">Check in and check out at any hour. A full 24-hour stay starting from arrival.</span>
+                </div>
+              </li>
+              <li className="flex items-start space-x-2.5">
+                <span className="text-gold mt-0.5 font-sans font-medium text-sm">✓</span>
+                <div>
+                  <span className="font-medium text-text-offwhite block text-[11px] uppercase tracking-wider">Direct Concierge Communication</span>
+                  <span className="text-[10.5px] text-text-gray/70 leading-relaxed block mt-0.5">Direct chat review with desk management to customize your luxury arrangements.</span>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
       </div>
     </div>

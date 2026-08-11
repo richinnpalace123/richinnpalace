@@ -128,27 +128,13 @@ export default async function RoomDetailsPage({ params, searchParams }: Props) {
   };
 
   return (
-    <div className="bg-bg-dark min-h-screen pt-28 pb-20 font-sans">
+    <div className="bg-bg-dark min-h-screen pt-20 md:pt-28 pb-20 font-sans">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(roomJsonLd) }}
       />
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         
-        {/* Breadcrumb */}
-        <nav className="mb-8 text-[10px] tracking-[0.2em] uppercase text-text-gray/65 flex items-center space-x-2">
-          <Link href="/" className="hover:text-gold transition-colors">HOME</Link>
-          <span>/</span>
-          <Link href="/rooms" className="hover:text-gold transition-colors">CHAMBERS</Link>
-          <span>/</span>
-          <span className="text-text-gray/60">{room.name}</span>
-          {activeBranch && (
-            <>
-              <span>/</span>
-              <span className="text-gold font-medium">{activeBranch.name.split(" — ")[1] || activeBranch.name}</span>
-            </>
-          )}
-        </nav>
 
         {/* Gallery Grid */}
         <RoomGallery 
@@ -160,14 +146,14 @@ export default async function RoomDetailsPage({ params, searchParams }: Props) {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
           
           {/* Left Column: Details */}
-          <div className="lg:col-span-8 space-y-12 md:space-y-16">
+          <div className="lg:col-span-8 space-y-6 md:space-y-16">
             
             {/* Title & Core Description */}
             <div className="space-y-2">
               <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-medium block">
                 {room.tag}
               </span>
-              <div className="flex justify-between items-center flex-wrap gap-4">
+              <div className="flex items-center justify-between gap-3 w-full">
                 <h1 className="font-serif text-3xl md:text-5xl text-text-offwhite font-light tracking-wide leading-tight">
                   {room.name}
                 </h1>
@@ -175,10 +161,10 @@ export default async function RoomDetailsPage({ params, searchParams }: Props) {
                   href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(activeBranch?.address || room.name + " Rich Inn Palace Chennai")}`}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center space-x-2 px-4 py-2 border border-border-dark hover:border-gold/40 text-text-offwhite text-xs uppercase tracking-[0.15em] font-medium rounded-full transition-all duration-300 hover:text-gold cursor-pointer"
+                  className="flex sm:inline-flex items-center justify-center sm:space-x-2 w-9 h-9 sm:w-auto sm:h-auto sm:px-4 sm:py-2 border border-border-dark hover:border-gold/40 text-text-offwhite text-xs uppercase tracking-[0.15em] font-medium rounded-full transition-all duration-300 hover:text-gold cursor-pointer shrink-0"
                 >
                   <MapPin size={14} className="text-gold" />
-                  <span>Google Maps</span>
+                  <span className="hidden sm:inline">Google Maps</span>
                 </a>
               </div>
             </div>
@@ -192,17 +178,17 @@ export default async function RoomDetailsPage({ params, searchParams }: Props) {
             )}
 
             {/* Room Specs Grid */}
-            <div className="space-y-6">
-              <h3 className="font-serif text-xl md:text-2xl text-text-offwhite font-light tracking-wide">
+            <div className="space-y-4">
+              <h3 className="font-serif text-lg md:text-2xl text-text-offwhite font-light tracking-wide">
                 Chamber Specifications
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-4 gap-x-8 border border-border-dark/65 rounded-2xl p-6 bg-surface-dark/30">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-y-1 sm:gap-y-4 gap-x-8 border border-border-dark/65 rounded-2xl p-4 sm:p-6 bg-surface-dark/30">
                 {room.specs.map((spec, index) => (
-                  <div key={index} className="flex justify-between py-2.5 border-b border-border-dark/30 last:border-b-0 sm:last:border-b-0 sm:odd:border-r sm:odd:pr-8 sm:even:pl-8">
-                    <span className="text-[10px] uppercase tracking-[0.15em] text-text-gray/70 font-sans">
+                  <div key={index} className="flex justify-between items-center py-2 border-b border-border-dark/30 last:border-b-0 sm:last:border-b-0 sm:odd:border-r sm:odd:pr-8 sm:even:pl-8">
+                    <span className="text-[9px] sm:text-[10px] uppercase tracking-[0.15em] text-text-gray/70 font-sans">
                       {spec.label}
                     </span>
-                    <span className="text-xs text-text-offwhite font-sans font-light text-right">
+                    <span className="text-[11px] sm:text-xs text-text-offwhite font-sans font-light text-right pl-4">
                       {spec.value}
                     </span>
                   </div>
@@ -211,13 +197,13 @@ export default async function RoomDetailsPage({ params, searchParams }: Props) {
             </div>
 
             {/* Amenities Section */}
-            <div className="space-y-6">
-              <h3 className="font-serif text-xl md:text-2xl text-text-offwhite font-light tracking-wide">
+            <div className="space-y-4">
+              <h3 className="font-serif text-lg md:text-2xl text-text-offwhite font-light tracking-wide">
                 Bespoke Amenities
               </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 {room.amenities.map((amenity, idx) => (
-                  <div key={idx} className="flex items-center space-x-3 text-text-gray/90 text-xs md:text-sm font-sans font-light">
+                  <div key={idx} className="flex items-center space-x-3 text-text-gray/90 text-xs sm:text-sm font-sans font-light">
                     <span className="w-1.5 h-1.5 rounded-full bg-gold shrink-0" />
                     <span>{amenity}</span>
                   </div>
@@ -227,15 +213,15 @@ export default async function RoomDetailsPage({ params, searchParams }: Props) {
 
             {/* Nearby Attractions */}
             {room.attractions && (
-              <div className="space-y-6">
-                <h3 className="font-serif text-xl md:text-2xl text-text-offwhite font-light tracking-wide">
+              <div className="space-y-4">
+                <h3 className="font-serif text-lg md:text-2xl text-text-offwhite font-light tracking-wide">
                   Environs & Excursions
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                   {room.attractions.map((attraction, idx) => (
                     <div
                       key={idx}
-                      className="flex items-center justify-between p-4 border border-border-dark/50 rounded-xl bg-surface-dark/30 hover:border-gold/20 transition-all duration-300"
+                      className="flex items-center justify-between p-3.5 sm:p-4 border border-border-dark/50 rounded-xl bg-surface-dark/30 hover:border-gold/20 transition-all duration-300"
                     >
                       <div className="flex items-center space-x-3">
                         <Landmark size={14} className="text-gold stroke-[1.25] shrink-0" />
@@ -249,8 +235,8 @@ export default async function RoomDetailsPage({ params, searchParams }: Props) {
             )}
 
             {/* FAQ Accordion */}
-            <div className="space-y-6">
-              <h3 className="font-serif text-xl md:text-2xl text-text-offwhite font-light tracking-wide">
+            <div className="space-y-4">
+              <h3 className="font-serif text-lg md:text-2xl text-text-offwhite font-light tracking-wide">
                 Frequently Asked
               </h3>
               <AccordionFAQ faqs={room.faqs} />

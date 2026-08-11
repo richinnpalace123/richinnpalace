@@ -20,7 +20,7 @@ export default function GallerySection() {
     <section
       ref={containerRef}
       id="gallery"
-      className="py-12 md:py-16 bg-bg-dark border-b border-border-dark overflow-hidden"
+      className="py-8 md:py-16 bg-bg-dark border-b border-border-dark overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 mb-8">
         <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-sans font-medium mb-3 block">

@@ -23,8 +23,8 @@ export default function RoomGallery({ roomName, initialImages }: RoomGalleryProp
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-16">
-      <div className="md:col-span-2 relative aspect-[16/10] rounded-2xl overflow-hidden bg-surface-dark">
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-3 md:gap-4 mb-8 md:mb-16">
+      <div className="md:col-span-2 relative aspect-[16/9] md:aspect-[16/10] rounded-2xl overflow-hidden bg-surface-dark">
         <AnimatePresence mode="wait">
           <motion.div
             key={images[0]}
@@ -45,13 +45,13 @@ export default function RoomGallery({ roomName, initialImages }: RoomGalleryProp
           </motion.div>
         </AnimatePresence>
       </div>
-      <div className="grid grid-cols-2 md:grid-cols-1 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-1 gap-3 md:gap-4">
         {[1, 2].map((idx) => {
           if (!images[idx]) return null;
           return (
             <div 
               key={images[idx]} 
-              className="relative aspect-[16/10] md:aspect-[16/9.5] rounded-2xl overflow-hidden bg-surface-dark cursor-pointer group"
+              className="relative aspect-[16/9] md:aspect-[16/9.5] rounded-2xl overflow-hidden bg-surface-dark cursor-pointer group"
               onClick={() => handleSwap(idx)}
             >
               <Image
