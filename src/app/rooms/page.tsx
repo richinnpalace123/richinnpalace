@@ -1,25 +1,27 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import RoomsClient from "@/components/rooms/RoomsClient";
 import { SITE_CONFIG } from "@/lib/config";
+import { Loader2 } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Sanctuaries & Luxury Chambers | Rich Inn Palace Chennai",
+  title: "Chennai Room Varieties & Tariffs | Rich Inn Palace Chennai",
   description:
-    "Discover twenty-eight hand-built residential chambers in Chennai crafted with private plunge pools, courtyards, and dedicated butler care.",
+    "Explore room varieties and tariffs across our 3 branches in T. Nagar (Rangan St & Pondy Bazaar) and Vadapalani (Saligramam). South Indian buffet breakfast and 24/7 room service included.",
   keywords: [
-    "Chennai Luxury Rooms",
-    "Rich Inn Palace Chambers",
-    "Resort Suites Tamil Nadu",
-    "Chennai Plunge Pool Hotel",
-    "Heritage Suites Chennai",
+    "Chennai Hotel Tariffs",
+    "Rich Inn Palace Rooms",
+    "T. Nagar Executive Room Tariff",
+    "Vadapalani Hotel Rooms",
+    "Pondy Bazaar Hotel Chennai",
   ],
   alternates: {
     canonical: `${SITE_CONFIG.domain}/rooms`,
   },
   openGraph: {
-    title: "Sanctuaries & Luxury Chambers | Rich Inn Palace Chennai",
+    title: "Room Varieties & Tariffs | Rich Inn Palace Chennai",
     description:
-      "Discover twenty-eight hand-built residential chambers in Chennai crafted with natural lime plaster.",
+      "Explore Executive and Suite tariffs across 3 prime Chennai branches.",
     url: `${SITE_CONFIG.domain}/rooms`,
     siteName: "Rich Inn Palace Hotel",
     images: [
@@ -27,21 +29,24 @@ export const metadata: Metadata = {
         url: "/images/photo1.avif",
         width: 1200,
         height: 630,
-        alt: "Rich Inn Palace Chennai Luxury Chambers",
+        alt: "Rich Inn Palace Chennai Room Tariffs",
       },
     ],
     locale: "en_US",
     type: "website",
   },
-  twitter: {
-    card: "summary_large_image",
-    title: "Sanctuaries & Luxury Chambers | Rich Inn Palace Chennai",
-    description:
-      "Discover twenty-eight hand-built residential chambers in Chennai.",
-    images: ["/images/photo1.avif"],
-  },
 };
 
 export default function RoomsPage() {
-  return <RoomsClient />;
+  return (
+    <Suspense
+      fallback={
+        <div className="bg-bg-dark min-h-screen pt-32 flex items-center justify-center">
+          <Loader2 className="animate-spin text-gold" size={28} />
+        </div>
+      }
+    >
+      <RoomsClient />
+    </Suspense>
+  );
 }

@@ -1,11 +1,11 @@
 "use client";
 
-import { useState, useMemo, useEffect, Suspense } from "react";
+import React, { useState, useMemo, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
-import { rooms, hotelDetails } from "@/lib/data";
-import { formatPrice } from "@/lib/utils";
+import { rooms, branches, Room, Branch, EXTRA_BED_RATE, getRoomPrice } from "@/lib/data";
+import { formatPrice, sanitizePhoneInput, validateIndianPhoneNumber } from "@/lib/utils";
 import {
   Mail,
   Phone,
@@ -14,6 +14,16 @@ import {
   Loader2,
   AlertCircle,
   MessageSquare,
+  MapPin,
+  CheckCircle2,
+  BedDouble,
+  Coffee,
+  Wifi,
+  Clock,
+  Wine,
+  Plus,
+  Minus,
+  Sparkles,
 } from "lucide-react";
 import { sendReservationEmail } from "@/lib/emailjs";
 import { WhatsAppReservationData, buildWhatsAppUrl } from "@/lib/whatsapp";
@@ -21,7 +31,6 @@ import ReservationConfirmationView from "./ReservationConfirmationView";
 import {
   trackBookingStarted,
   trackRoomSelected,
-  trackDateSelected,
   trackGuestDetailsStarted,
   trackReservationSubmitted,
   trackReservationFailed,
@@ -40,30 +49,71 @@ function generateRefCode(): string {
 function BookingContent() {
   const searchParams = useSearchParams();
 
-  // Initialize state directly from search params or defaults
+  // Initialize selected room and branch from query params or fallback
+  const initialRoomsMap = useMemo<Record<string, number>>(() => {
+    const roomsParam = searchParams.get("rooms");
+    if (roomsParam) {
+      try {
+        const parsed = JSON.parse(roomsParam);
+        if (typeof parsed === "object" && parsed !== null) {
+          return parsed;
+        }
+      } catch (e) {
+        console.error("Failed to parse rooms param", e);
+      }
+    }
+    return {};
+  }, [searchParams]);
+
+  const initialExtraBeds = useMemo<number>(() => {
+    const eb = searchParams.get("extrabeds");
+    if (eb) {
+      const parsed = parseInt(eb, 10);
+      return isNaN(parsed) ? 0 : parsed;
+    }
+    const extraParam = searchParams.get("extrabed");
+    return extraParam === "1" || extraParam === "true" ? 1 : 0;
+  }, [searchParams]);
+
   const initialRoomId = useMemo(() => {
     const roomParam = searchParams.get("room");
-    if (roomParam && rooms.some((r) => r.id === roomParam)) {
+    if (roomParam && rooms.some((r) => r.id === roomParam || r.slug === roomParam)) {
       return roomParam;
     }
-    return rooms[0]?.id || "";
+    return rooms[0]?.id || "executive-room";
   }, [searchParams]);
 
   const initialBranchId = useMemo(() => {
     const branchParam = searchParams.get("branch");
-    const room = rooms.find((r) => r.id === initialRoomId) || rooms[0];
-    if (room && room.branches && room.branches.length > 0) {
-      const isValid = room.branches.some((b) => b.id === branchParam);
-      return isValid ? (branchParam as string) : room.branches[0].id;
+    if (branchParam && branches.some((b) => b.id === branchParam || b.slug === branchParam)) {
+      const matched = branches.find((b) => b.id === branchParam || b.slug === branchParam);
+      return matched?.id || branches[0]?.id || "tnagar-rangan";
     }
-    return "";
-  }, [searchParams, initialRoomId]);
+    return branches[0]?.id || "tnagar-rangan";
+  }, [searchParams]);
 
-  const [selectedRoomId, setSelectedRoomId] = useState<string>(initialRoomId);
+  const initialOccupancy = useMemo(() => {
+    const occParam = searchParams.get("occupancy");
+    return occParam === "single" ? "single" : "double";
+  }, [searchParams]);
+
+  const initialExtraBed = useMemo(() => {
+    return initialExtraBeds > 0;
+  }, [initialExtraBeds]);
+
   const [selectedBranchId, setSelectedBranchId] = useState<string>(initialBranchId);
+  const [selectedRoomId, setSelectedRoomId] = useState<string>(initialRoomId);
+  const [occupancy, setOccupancy] = useState<"single" | "double">(initialOccupancy);
+  const [hasExtraBed, setHasExtraBed] = useState<boolean>(initialExtraBed);
+  const [extraBedsCount, setExtraBedsCount] = useState<number>(initialExtraBeds);
+  const [roomsSelection, setRoomsSelection] = useState<Record<string, number>>(initialRoomsMap);
+
   const [checkIn, setCheckIn] = useState<string>(() => searchParams.get("checkin") || getTomorrowString(1));
   const [checkOut, setCheckOut] = useState<string>(() => searchParams.get("checkout") || getTomorrowString(2));
-  const [guests, setGuests] = useState<number>(() => parseInt(searchParams.get("guests") || "2", 10) || 2);
+  const [guests, setGuests] = useState<number>(() => {
+    const g = parseInt(searchParams.get("guests") || "2", 10);
+    return isNaN(g) || g < 1 ? 2 : g;
+  });
 
   // Form fields
   const [fullName, setFullName] = useState("");
@@ -87,16 +137,17 @@ function BookingContent() {
     trackBookingStarted("booking_page", initialRoomId, initialBranchId);
   }, [initialRoomId, initialBranchId]);
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Strictly filter out non-phone characters (letters, symbols like ; or ,)
-    const val = e.target.value;
-    const sanitized = val.replace(/[^0-9+\-\s()]/g, "");
-    setPhone(sanitized);
+  useEffect(() => {
+    window.scrollTo({ top: 0, left: 0, behavior: "instant" });
+  }, []);
 
-    // Provide immediate feedback if user attempted to type letters
-    if (val !== sanitized) {
-      setPhoneError("Phone number can only contain digits and valid phone symbols (+, -, ()).");
-    } else if (sanitized.replace(/[^0-9]/g, "").length >= 6) {
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const sanitized = sanitizePhoneInput(e.target.value);
+    setPhone(sanitized);
+    const err = validateIndianPhoneNumber(sanitized);
+    if (err) {
+      setPhoneError(err);
+    } else {
       setPhoneError("");
     }
   };
@@ -118,16 +169,36 @@ function BookingContent() {
 
   const handleRoomChange = (roomId: string) => {
     setSelectedRoomId(roomId);
-    const newRoom = rooms.find((r) => r.id === roomId);
-    if (newRoom && newRoom.branches && newRoom.branches.length > 0) {
-      setSelectedBranchId(newRoom.branches[0].id);
-    } else {
-      setSelectedBranchId("");
-    }
-    trackRoomSelected(roomId, newRoom?.name, newRoom?.branches?.[0]?.id);
+    trackRoomSelected(roomId, roomId, selectedBranchId);
   };
 
-  // Derive nights from dates directly
+  // Derived entities
+  const selectedBranch = branches.find((b) => b.id === selectedBranchId) || branches[0];
+  const selectedRoom = rooms.find((r) => r.id === selectedRoomId || r.slug === selectedRoomId) || rooms[0];
+
+  const hasMultiRoomSelection = useMemo(() => {
+    return Object.values(roomsSelection).some((count) => count > 0);
+  }, [roomsSelection]);
+
+  const multiRoomItems = useMemo(() => {
+    if (!hasMultiRoomSelection) return [];
+    return selectedBranch.roomVarieties
+      .filter((r) => (roomsSelection[r.id] || 0) > 0)
+      .map((r) => ({
+        room: r,
+        count: roomsSelection[r.id],
+        total: r.price * roomsSelection[r.id],
+      }));
+  }, [selectedBranch, roomsSelection, hasMultiRoomSelection]);
+
+  const totalChambersCount = useMemo(() => {
+    if (hasMultiRoomSelection) {
+      return multiRoomItems.reduce((acc, item) => acc + item.count, 0);
+    }
+    return 1;
+  }, [hasMultiRoomSelection, multiRoomItems]);
+
+  // Derive nights from dates
   const nights = useMemo(() => {
     const start = new Date(checkIn);
     const end = new Date(checkOut);
@@ -138,20 +209,27 @@ function BookingContent() {
     return 1;
   }, [checkIn, checkOut]);
 
-  const selectedRoom = rooms.find((r) => r.id === selectedRoomId) || rooms[0];
-  const selectedBranch =
-    selectedRoom?.branches?.find((b) => b.id === selectedBranchId) || selectedRoom?.branches?.[0];
-
   // Pricing calculations
-  const basePrice = selectedRoom ? selectedRoom.price : 0;
-  const baseTotal = basePrice * nights;
+  const perNightBaseRate = useMemo(() => {
+    if (hasMultiRoomSelection && multiRoomItems.length > 0) {
+      return multiRoomItems.reduce((acc, item) => acc + item.total, 0);
+    }
+    return getRoomPrice(selectedRoom.id, selectedBranch.id, occupancy);
+  }, [hasMultiRoomSelection, multiRoomItems, selectedRoom.id, selectedBranch.id, occupancy]);
+
+  const effectiveExtraBeds = hasMultiRoomSelection ? extraBedsCount : (hasExtraBed ? 1 : 0);
+  const perNightExtraBedRate = effectiveExtraBeds * EXTRA_BED_RATE;
+  const perNightTotalRate = perNightBaseRate + perNightExtraBedRate;
+
+  const roomTotal = perNightBaseRate * nights;
+  const extraBedTotal = perNightExtraBedRate * nights;
+  const baseTotal = roomTotal + extraBedTotal;
   const luxuryTax = Math.round(baseTotal * 0.18);
   const grandTotal = baseTotal + luxuryTax;
 
   const validateForm = () => {
     let nameErr = "";
     let mailErr = "";
-    let phErr = "";
 
     if (!fullName.trim()) {
       nameErr = "Please enter your full name.";
@@ -162,20 +240,13 @@ function BookingContent() {
       mailErr = "Please enter a valid email address.";
     }
 
-    const phoneDigitsOnly = phone.replace(/[^0-9]/g, "");
-    const phoneRegex = /^\+?[0-9\s\-\(\)]{6,20}$/;
-    if (!phone.trim()) {
-      phErr = "Please enter your phone number.";
-    } else if (phoneDigitsOnly.length < 6 || !phoneRegex.test(phone.trim())) {
-      phErr = "Please enter a valid contact phone number (digits only, at least 6 numbers).";
-    }
+    let phErr = validateIndianPhoneNumber(phone) || "";
 
     setFullNameError(nameErr);
     setEmailError(mailErr);
     setPhoneError(phErr);
 
     if (nameErr || mailErr || phErr) {
-      // Focus first error input field
       if (nameErr) document.getElementById("fullNameInput")?.focus();
       else if (mailErr) document.getElementById("emailInput")?.focus();
       else if (phErr) document.getElementById("phoneInput")?.focus();
@@ -186,11 +257,7 @@ function BookingContent() {
     const end = new Date(checkOut);
     if (isNaN(start.getTime()) || isNaN(end.getTime())) return "Please select valid check-in and check-out dates.";
     if (end <= start) return "Check-out date must be after check-in date.";
-    if (!selectedRoom) return "Please select a chamber or suite.";
-    const maxCapacity = selectedRoom ? parseInt(selectedRoom.guests, 10) || 2 : 4;
-    if (guests > maxCapacity) {
-      return `The selected chamber (${selectedRoom.name}) accommodates a maximum of ${maxCapacity} guests. Please adjust your guest selection.`;
-    }
+
     if (requests.length > 1000) {
       return "Special arrangements text cannot exceed 1000 characters.";
     }
@@ -213,8 +280,13 @@ function BookingContent() {
 
     const generatedRef = generateRefCode();
     const durationLabel = `${nights} night${nights > 1 ? "s" : ""}`;
-    const propertyLabel = selectedBranch?.name || hotelDetails.name;
-    const roomLabel = selectedRoom ? selectedRoom.name : "Sanctuary";
+    const propertyLabel = selectedBranch.name;
+    const roomLabel = hasMultiRoomSelection
+      ? multiRoomItems.map((item) => `${item.count}x ${item.room.name}`).join(", ")
+      : selectedRoom.name;
+    const occupancyLabel = hasMultiRoomSelection
+      ? `${totalChambersCount} Chamber(s) Selected`
+      : (occupancy === "single" ? "Single Occupancy (1 Guest)" : "Double Occupancy (2 Guests)");
     const totalDisplay = formatPrice(grandTotal);
 
     const reservationPayload: WhatsAppReservationData = {
@@ -222,33 +294,38 @@ function BookingContent() {
       guestEmail: email.trim(),
       guestPhone: phone.trim(),
       roomName: roomLabel,
-      roomTag: selectedRoom?.tag,
+      roomTag: hasMultiRoomSelection ? `${totalChambersCount} Rooms` : selectedRoom.tag,
       propertyName: propertyLabel,
+      occupancyType: occupancyLabel,
+      extraBeds: effectiveExtraBeds,
       checkIn: checkIn,
       checkOut: checkOut,
       duration: durationLabel,
       guests: guests,
       specialRequests: requests.trim(),
       estimatedTotal: totalDisplay,
+      branchPhone: selectedBranch.phone,
     };
 
     try {
-      // Send reservation request to hotel owner via EmailJS
+      // Send reservation request to hotel desk via EmailJS
       await sendReservationEmail({
         guest_name: fullName.trim(),
         guest_email: email.trim(),
         guest_phone: phone.trim(),
         property_name: propertyLabel,
         room_name: roomLabel,
+        occupancy_type: occupancyLabel,
+        extra_bed: effectiveExtraBeds > 0 ? `${effectiveExtraBeds} Extra Bed(s) (${formatPrice(effectiveExtraBeds * EXTRA_BED_RATE)}/night)` : "None",
         check_in: checkIn,
         check_out: checkOut,
         duration: durationLabel,
         guests: guests,
         special_requests: requests.trim() || "None",
-        base_rate: `${formatPrice(basePrice)} x ${nights} (${formatPrice(baseTotal)})`,
+        base_rate: `${formatPrice(perNightTotalRate)} x ${nights} (${formatPrice(baseTotal)})`,
         gst: formatPrice(luxuryTax),
         estimated_total: totalDisplay,
-        subject: `New Reservation Request — ${roomLabel} — ${checkIn}`,
+        subject: `New Reservation Request — ${roomLabel} (${occupancyLabel}) — ${selectedBranch.title}`,
       });
 
       // Switch to full-page confirmation view seamlessly
@@ -256,19 +333,19 @@ function BookingContent() {
       setSubmittedData(reservationPayload);
       setIsSubmitted(true);
       trackReservationSubmitted({
-        roomId: selectedRoomId,
+        roomId: selectedRoom.id,
         roomName: roomLabel,
         nights: nights,
         guestCount: guests,
         estimatedTotal: grandTotal,
-        branchName: selectedBranch?.name,
+        branchName: selectedBranch.name,
       });
       window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err: unknown) {
       console.error("Failed to send reservation request:", err);
-      trackReservationFailed(selectedRoomId, "emailjs_dispatch_error");
+      trackReservationFailed(selectedRoom.id, "emailjs_dispatch_error");
       setErrorMessage(
-        "Unable to submit your reservation request via email at this moment. You can also reach out to our concierge directly on WhatsApp."
+        "Unable to submit your reservation request via email at this moment. You can connect with our concierge directly on WhatsApp."
       );
     } finally {
       setIsSubmitting(false);
@@ -282,7 +359,7 @@ function BookingContent() {
         reservationData={submittedData}
         bookingReference={bookingReference}
         selectedRoom={selectedRoom}
-        basePriceFormatted={`${formatPrice(basePrice)} x ${nights}`}
+        basePriceFormatted={`${formatPrice(perNightTotalRate)} x ${nights}`}
         taxFormatted={formatPrice(luxuryTax)}
         onNewRequest={() => setIsSubmitted(false)}
       />
@@ -291,26 +368,28 @@ function BookingContent() {
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
-      {/* Left Column: Form entry */}
+      {/* Left Column: Form & Room Selection Entry */}
       <div className="lg:col-span-7 space-y-8">
-        {/* Title */}
+        {/* Title Header */}
         <div className="space-y-4 border-b border-border-dark/45 pb-5">
           <div className="flex items-center justify-between flex-wrap gap-4">
             <div className="space-y-1">
               <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-medium block">
-                Bespoke Reservation
+                DIRECT RESERVATION
               </span>
               <h1 className="font-serif text-3xl md:text-4xl text-text-offwhite font-light tracking-wide">
-                Reserve Your Stay
+                Custom Stay Reservation
               </h1>
             </div>
-            <div className="flex items-center space-x-2 bg-gold/5 border border-gold/15 px-3 py-1.5 rounded-full shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse" />
-              <span className="text-[9px] uppercase tracking-[0.15em] text-gold font-medium">Direct Concierge Connection</span>
+            <div className="flex items-center space-x-2 bg-gold/10 border border-gold/25 px-3.5 py-1.5 rounded-full shrink-0">
+              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+              <span className="text-[10px] uppercase tracking-[0.15em] text-gold font-medium">
+                Helpline: 9884762222
+              </span>
             </div>
           </div>
           <p className="font-sans text-xs text-text-gray font-light leading-relaxed">
-            Submit your dates and preferences. Our reservation team will review availability and contact you promptly to finalize your stay.
+            Select your preferred Chennai branch, choose your room type & occupancy, and configure optional extra beds. Complimentary South Indian buffet breakfast, high-speed Wi-Fi, and 24/7 room service are included with every booking.
           </p>
         </div>
 
@@ -325,13 +404,16 @@ function BookingContent() {
                   href={buildWhatsAppUrl({
                     guestName: fullName || "Guest",
                     roomName: selectedRoom.name,
-                    propertyName: selectedBranch?.name,
+                    propertyName: selectedBranch.name,
+                    occupancyType: occupancy === "single" ? "Single Occupancy" : "Double Occupancy",
+                    extraBeds: hasExtraBed ? 1 : 0,
                     checkIn: checkIn,
                     checkOut: checkOut,
                     duration: `${nights} nights`,
                     guests: guests,
                     specialRequests: requests,
                     estimatedTotal: formatPrice(grandTotal),
+                    branchPhone: selectedBranch.phone,
                   })}
                   target="_blank"
                   rel="noopener noreferrer"
@@ -345,11 +427,331 @@ function BookingContent() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Section: Contact Information */}
-          <div className="bg-surface-dark/30 border border-border-dark/60 rounded-2xl p-6 space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-8">
+          {hasMultiRoomSelection ? (
+            /* CONCISE SUMMARY HEADER FOR PRE-SELECTED STAY */
+            <div className="bg-surface-dark/60 border border-gold/30 rounded-2xl p-6 space-y-4">
+              <div className="flex items-center justify-between border-b border-border-dark/40 pb-3">
+                <span className="text-[10px] uppercase tracking-[0.2em] text-gold font-medium font-sans flex items-center">
+                  <Sparkles size={12} className="mr-1.5" />
+                  Your Selected Sanctuary Stay
+                </span>
+                <span className="text-[10px] text-text-gray/70 font-mono">
+                  {nights} {nights === 1 ? "Night" : "Nights"} ({checkIn} &rarr; {checkOut})
+                </span>
+              </div>
+
+              <div className="space-y-2 text-xs font-sans">
+                <div className="flex justify-between">
+                  <span className="text-text-gray">Property Location:</span>
+                  <span className="text-text-offwhite font-serif font-light text-sm">
+                    {selectedBranch.title}
+                  </span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-text-gray">Selected Chambers:</span>
+                  <span className="text-text-offwhite font-medium">
+                    {multiRoomItems.map((i) => `${i.count} × ${i.room.name}`).join(", ")}
+                  </span>
+                </div>
+                {effectiveExtraBeds > 0 && (
+                  <div className="flex justify-between">
+                    <span className="text-text-gray">Extra Beds:</span>
+                    <span className="text-gold font-medium">{effectiveExtraBeds} Extra Bed Option</span>
+                  </div>
+                )}
+                <div className="flex justify-between pt-1 border-t border-border-dark/30">
+                  <span className="text-text-gray font-medium">Estimated Total (incl. 18% GST):</span>
+                  <span className="text-gold font-serif text-lg font-light">{formatPrice(grandTotal)}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            <React.Fragment>
+              {/* STEP 1: CHOOSE BRANCH */}
+              <div className="bg-surface-dark/40 border border-border-dark/60 rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs uppercase tracking-[0.2em] text-gold font-medium flex items-center">
+                    <MapPin size={13} className="mr-2 text-gold" />
+                    1. Select Preferred Branch
+                  </h3>
+                  <span className="text-[10px] text-text-gray/60 font-sans">3 Prime Locations</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                  {branches.map((branch) => {
+                    const isSelected = selectedBranchId === branch.id;
+                    return (
+                      <button
+                        type="button"
+                        key={branch.id}
+                        onClick={() => setSelectedBranchId(branch.id)}
+                        className={`text-left p-4 rounded-xl border transition-all duration-300 flex flex-col justify-between cursor-pointer ${
+                          isSelected
+                            ? "bg-gold/10 border-gold shadow-[0_0_15px_rgba(199,168,109,0.15)]"
+                            : "bg-bg-dark/60 border-border-dark/60 hover:border-gold/40 text-text-gray"
+                        }`}
+                      >
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <span className="px-2 py-0.5 text-[8px] uppercase tracking-wider font-semibold rounded bg-gold/15 text-gold">
+                              {branch.area}
+                            </span>
+                            {isSelected && <CheckCircle2 size={13} className="text-gold" />}
+                          </div>
+                          <h4 className={`font-serif text-sm font-light ${isSelected ? "text-text-offwhite" : "text-text-gray"}`}>
+                            {branch.title}
+                          </h4>
+                        </div>
+                        <p className="text-[10px] text-text-gray/60 mt-2 line-clamp-2">
+                          {branch.address}
+                        </p>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* STEP 2: CHOOSE ROOM TYPE */}
+              <div className="bg-surface-dark/40 border border-border-dark/60 rounded-2xl p-6 space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs uppercase tracking-[0.2em] text-gold font-medium flex items-center">
+                    <BedDouble size={13} className="mr-2 text-gold" />
+                    2. Choose Room Type
+                  </h3>
+                  <span className="text-[10px] text-text-gray/60 font-sans">Executive vs Suite</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {rooms.map((room) => {
+                    const isSelected = selectedRoomId === room.id || selectedRoomId === room.slug;
+                    const roomTariffSingle = getRoomPrice(room.id, selectedBranch.id, "single");
+                    const roomTariffDouble = getRoomPrice(room.id, selectedBranch.id, "double");
+
+                    return (
+                      <div
+                        key={room.id}
+                        onClick={() => handleRoomChange(room.id)}
+                        className={`p-4 rounded-xl border transition-all duration-300 flex flex-col justify-between cursor-pointer ${
+                          isSelected
+                            ? "bg-gold/10 border-gold shadow-[0_0_15px_rgba(199,168,109,0.15)]"
+                            : "bg-bg-dark/60 border-border-dark/60 hover:border-gold/40"
+                        }`}
+                      >
+                        <div className="space-y-3">
+                          <div className="relative aspect-[16/9] w-full rounded-lg overflow-hidden bg-bg-dark">
+                            <Image
+                              src={room.image}
+                              alt={room.name}
+                              fill
+                              sizes="(max-width: 640px) 100vw, 300px"
+                              className="object-cover"
+                            />
+                            <div className="absolute top-2 left-2">
+                              <span className="px-2 py-0.5 text-[8px] uppercase tracking-wider font-semibold rounded bg-bg-dark/80 text-gold border border-gold/30">
+                                {room.tag}
+                              </span>
+                            </div>
+                          </div>
+
+                          <div className="flex items-baseline justify-between">
+                            <h4 className={`font-serif text-lg ${isSelected ? "text-text-offwhite" : "text-text-gray"}`}>
+                              {room.name}
+                            </h4>
+                            <span className="text-[11px] font-sans text-gold font-medium">
+                              {formatPrice(roomTariffSingle)} / {formatPrice(roomTariffDouble)}
+                            </span>
+                          </div>
+
+                          <p className="text-[11px] text-text-gray font-light leading-relaxed">
+                            {room.description}
+                          </p>
+                        </div>
+
+                        <div className="mt-4 pt-3 border-t border-border-dark/40 flex items-center justify-between text-[10px] text-text-gray/70">
+                          <span>{room.size}</span>
+                          <span className="text-gold font-medium">
+                            {isSelected ? "Selected ✓" : "Click to select"}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* STEP 3: OCCUPANCY & EXTRA BED CONFIGURATION */}
+              <div className="bg-surface-dark/40 border border-border-dark/60 rounded-2xl p-6 space-y-5">
+                <h3 className="text-xs uppercase tracking-[0.2em] text-gold font-medium">
+                  3. Occupancy &amp; Extra Bed Details
+                </h3>
+
+                {/* Single vs Double Occupancy Selector */}
+                <div className="space-y-2">
+                  <label className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium block">
+                    Occupancy Selection
+                  </label>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOccupancy("single");
+                        if (guests > 1 && !hasExtraBed) setGuests(1);
+                      }}
+                      className={`p-3.5 rounded-xl border text-left flex items-center justify-between cursor-pointer transition-all ${
+                        occupancy === "single"
+                          ? "bg-gold/15 border-gold text-text-offwhite"
+                          : "bg-bg-dark/50 border-border-dark/60 text-text-gray hover:border-gold/40"
+                      }`}
+                    >
+                      <div>
+                        <span className="font-sans font-medium text-xs block text-text-offwhite">
+                          Single Occupancy (1 Guest)
+                        </span>
+                        <span className="text-[10px] text-text-gray/60">
+                          Tariff: {formatPrice(getRoomPrice(selectedRoom.id, selectedBranch.id, "single"))} / night
+                        </span>
+                      </div>
+                      <span className="font-serif text-sm text-gold font-light">
+                        {formatPrice(getRoomPrice(selectedRoom.id, selectedBranch.id, "single"))}
+                      </span>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setOccupancy("double");
+                        if (guests < 2) setGuests(2);
+                      }}
+                      className={`p-3.5 rounded-xl border text-left flex items-center justify-between cursor-pointer transition-all ${
+                        occupancy === "double"
+                          ? "bg-gold/15 border-gold text-text-offwhite"
+                          : "bg-bg-dark/50 border-border-dark/60 text-text-gray hover:border-gold/40"
+                      }`}
+                    >
+                      <div>
+                        <span className="font-sans font-medium text-xs block text-text-offwhite">
+                          Double Occupancy (2 Guests)
+                        </span>
+                        <span className="text-[10px] text-text-gray/60">
+                          Tariff: {formatPrice(getRoomPrice(selectedRoom.id, selectedBranch.id, "double"))} / night
+                        </span>
+                      </div>
+                      <span className="font-serif text-sm text-gold font-light">
+                        {formatPrice(getRoomPrice(selectedRoom.id, selectedBranch.id, "double"))}
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Extra Bed Toggle */}
+                <div className="pt-2 border-t border-border-dark/40">
+                  <label
+                    onClick={() => setHasExtraBed(!hasExtraBed)}
+                    className="flex items-center justify-between p-3.5 rounded-xl bg-bg-dark/50 border border-border-dark/60 hover:border-gold/40 transition-colors cursor-pointer"
+                  >
+                    <div className="flex items-center space-x-3">
+                      <input
+                        type="checkbox"
+                        checked={hasExtraBed}
+                        onChange={(e) => setHasExtraBed(e.target.checked)}
+                        className="w-4 h-4 accent-gold cursor-pointer rounded"
+                      />
+                      <div>
+                        <span className="text-xs text-text-offwhite font-medium block">
+                          Include Extra Bed (+₹700 / night)
+                        </span>
+                        <span className="text-[10px] text-text-gray/60">
+                          Suitable for an additional adult or child
+                        </span>
+                      </div>
+                    </div>
+                    <span className="text-xs text-gold font-medium font-mono">
+                      +₹700/nt
+                    </span>
+                  </label>
+                </div>
+              </div>
+
+            {/* Dates & Guest Counter */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium">
+                  Check In
+                </label>
+                <input
+                  type="date"
+                  value={checkIn}
+                  min={getTomorrowString(0)}
+                  onChange={(e) => {
+                    setCheckIn(e.target.value);
+                    const nextDay = new Date(e.target.value);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    if (checkOut <= e.target.value) {
+                      setCheckOut(nextDay.toISOString().split("T")[0]);
+                    }
+                  }}
+                  className="bg-bg-dark border border-border-dark rounded-lg p-2.5 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors [color-scheme:dark]"
+                />
+              </div>
+
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium">
+                  Check Out
+                </label>
+                <input
+                  type="date"
+                  value={checkOut}
+                  min={checkIn}
+                  onChange={(e) => setCheckOut(e.target.value)}
+                  className="bg-bg-dark border border-border-dark rounded-lg p-2.5 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors [color-scheme:dark]"
+                />
+              </div>
+
+              <div className="flex flex-col space-y-1.5">
+                <label className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium">
+                  Guests Count
+                </label>
+                <select
+                  value={guests}
+                  onChange={(e) => setGuests(parseInt(e.target.value, 10))}
+                  className="bg-bg-dark border border-border-dark rounded-lg p-2.5 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors cursor-pointer"
+                >
+                  <option value={1}>1 Guest (Single)</option>
+                  <option value={2}>2 Guests (Double)</option>
+                  <option value={3}>3 Guests (with Extra Bed)</option>
+                  <option value={4}>4 Guests</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Inclusions highlights */}
+            <div className="p-3 bg-gold/5 border border-gold/20 rounded-xl">
+              <span className="text-[9px] uppercase tracking-wider text-gold font-medium block mb-2">
+                All Bookings Include:
+              </span>
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 text-[10px] text-text-gray">
+                <span className="flex items-center text-text-offwhite">
+                  <Coffee size={11} className="mr-1 text-gold" /> South Indian Buffet
+                </span>
+                <span className="flex items-center text-text-offwhite">
+                  <Wifi size={11} className="mr-1 text-gold" /> High-Speed Wi-Fi
+                </span>
+                <span className="flex items-center text-text-offwhite">
+                  <Clock size={11} className="mr-1 text-gold" /> 24/7 Room Service
+                </span>
+                <span className="flex items-center text-text-offwhite">
+                  <Wine size={11} className="mr-1 text-gold" /> In-Room Mini Bar
+                </span>
+              </div>
+            </div>
+          </React.Fragment>
+        )}
+
+          {/* STEP 4: GUEST CONTACT DETAILS */}
+          <div className="bg-surface-dark/40 border border-border-dark/60 rounded-2xl p-6 space-y-4">
             <h3 className="text-xs uppercase tracking-[0.2em] text-gold font-medium mb-2">
-              Guest Contact Details
+              4. Guest Contact Information
             </h3>
 
             {/* Full Name */}
@@ -363,9 +765,9 @@ function BookingContent() {
                 type="text"
                 required
                 value={fullName}
-                onFocus={() => trackGuestDetailsStarted(selectedRoomId, nights, guests)}
+                onFocus={() => trackGuestDetailsStarted(selectedRoom.id, nights, guests)}
                 onChange={handleFullNameChange}
-                placeholder="Elena Rostova"
+                placeholder="Dr. Rajesh Varma"
                 className={`bg-bg-dark border rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none transition-colors w-full placeholder-text-gray/30 ${
                   fullNameError ? "border-red-500/80 bg-red-500/5 focus:border-red-500" : "border-border-dark focus:border-gold"
                 }`}
@@ -391,7 +793,7 @@ function BookingContent() {
                   required
                   value={email}
                   onChange={handleEmailChange}
-                  placeholder="elena@writer.com"
+                  placeholder="rajesh@domain.com"
                   className={`bg-bg-dark border rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none transition-colors w-full placeholder-text-gray/30 ${
                     emailError ? "border-red-500/80 bg-red-500/5 focus:border-red-500" : "border-border-dark focus:border-gold"
                   }`}
@@ -408,15 +810,16 @@ function BookingContent() {
               <div className="flex flex-col space-y-1.5">
                 <label htmlFor="phoneInput" className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium flex items-center">
                   <Phone size={11} className="mr-1.5" />
-                  Phone Number
+                  Contact Phone Number
                 </label>
                 <input
                   id="phoneInput"
                   type="tel"
                   required
+                  maxLength={15}
                   value={phone}
                   onChange={handlePhoneChange}
-                  placeholder="+91 99999 55555"
+                  placeholder="+91 98847 62222"
                   className={`bg-bg-dark border rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none transition-colors w-full placeholder-text-gray/30 ${
                     phoneError ? "border-red-500/80 bg-red-500/5 focus:border-red-500" : "border-border-dark focus:border-gold"
                   }`}
@@ -433,14 +836,14 @@ function BookingContent() {
             {/* Special requests */}
             <div className="flex flex-col space-y-1.5">
               <label htmlFor="requestsInput" className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium">
-                Special Arrangements or Dietary Needs
+                Special Arrangements or Arrival Notes
               </label>
               <textarea
                 id="requestsInput"
                 value={requests}
                 onChange={(e) => setRequests(e.target.value)}
                 maxLength={1000}
-                placeholder="Prefer lavender scent in turndown, or airport greeting transfers details..."
+                placeholder="Estimated late arrival time, airport transfer assistance, or dietary requirements..."
                 rows={3}
                 className="bg-bg-dark border border-border-dark rounded-lg p-3 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full placeholder-text-gray/30 resize-none"
               />
@@ -456,25 +859,82 @@ function BookingContent() {
             {isSubmitting ? (
               <>
                 <Loader2 size={14} className="animate-spin" />
-                <span>SUBMITTING REQUEST...</span>
+                <span>SUBMITTING RESERVATION...</span>
               </>
             ) : (
-              <span>REQUEST RESERVATION</span>
+              <span>REQUEST RESERVATION ({formatPrice(grandTotal)})</span>
             )}
           </button>
         </form>
       </div>
 
-      {/* Right Column: Checkout Summary */}
+      {/* Right Column: Dynamic Reservation Summary */}
       <div className="lg:col-span-5">
         <div className="lg:sticky lg:top-28 space-y-6">
-          <div className="bg-surface-dark border border-border-dark rounded-2xl p-6 md:p-8 space-y-6">
-            <h3 className="text-xs uppercase tracking-[0.2em] text-gold font-medium">
-              Reservation Summary
-            </h3>
+          <div className="bg-surface-dark border border-border-dark rounded-2xl p-6 md:p-8 space-y-6 shadow-xl">
+            <div className="flex items-center justify-between">
+              <h3 className="text-xs uppercase tracking-[0.2em] text-gold font-medium">
+                Reservation Summary
+              </h3>
+              <span className="text-[9px] uppercase tracking-wider text-text-gray/60 font-mono">
+                {nights} {nights === 1 ? "Night" : "Nights"}
+              </span>
+            </div>
 
-            {/* Room Snapshot */}
-            {selectedRoom && (
+            {/* Room Snapshot / Multi-room Selection */}
+            {hasMultiRoomSelection ? (
+              <div className="space-y-3 border-b border-border-dark/40 pb-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-[9px] uppercase tracking-[0.2em] text-gold font-medium">
+                    Selected Chambers ({totalChambersCount})
+                  </span>
+                  <span className="text-[10px] text-text-gray/70 font-mono">
+                    {selectedBranch.title}
+                  </span>
+                </div>
+                <div className="space-y-2">
+                  {multiRoomItems.map((item) => (
+                    <div
+                      key={item.room.id}
+                      className="flex items-center justify-between p-2.5 rounded-xl bg-bg-dark/40 border border-border-dark/40 text-xs"
+                    >
+                      <div className="flex items-center space-x-2.5">
+                        <div className="relative w-10 h-10 rounded-lg overflow-hidden shrink-0 bg-bg-dark">
+                          <Image
+                            src={item.room.image}
+                            alt={item.room.name}
+                            fill
+                            sizes="40px"
+                            className="object-cover"
+                          />
+                        </div>
+                        <div>
+                          <p className="font-serif text-text-offwhite font-light text-xs">
+                            {item.count} &times; {item.room.name}
+                          </p>
+                          <p className="text-[10px] text-text-gray/60 font-sans">
+                            {formatPrice(item.room.price)} /night
+                          </p>
+                        </div>
+                      </div>
+                      <span className="font-mono text-gold text-xs font-medium">
+                        {formatPrice(item.total)}
+                      </span>
+                    </div>
+                  ))}
+                  {effectiveExtraBeds > 0 && (
+                    <div className="flex items-center justify-between p-2.5 rounded-xl bg-bg-dark/40 border border-border-dark/40 text-xs">
+                      <span className="text-text-offwhite font-light">
+                        {effectiveExtraBeds} &times; Extra Bed Option
+                      </span>
+                      <span className="font-mono text-gold text-xs font-medium">
+                        {formatPrice(effectiveExtraBeds * EXTRA_BED_RATE)}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ) : (
               <div className="flex items-center space-x-4 border-b border-border-dark/40 pb-4">
                 <div className="relative w-20 h-20 rounded-xl overflow-hidden bg-bg-dark shrink-0">
                   <Image
@@ -492,20 +952,25 @@ function BookingContent() {
                   <h4 className="font-serif text-lg text-text-offwhite font-light">
                     {selectedRoom.name}
                   </h4>
-                  {selectedBranch && (
-                    <p className="text-[10px] text-gold font-sans font-medium tracking-wide uppercase">
-                      {selectedBranch.name.split(" — ")[1] || selectedBranch.name}
-                    </p>
-                  )}
+                  <p className="text-[11px] text-gold font-sans font-medium">
+                    {selectedBranch.title}
+                  </p>
                   <p className="text-[10px] text-text-gray font-sans font-light">
-                    {selectedRoom.size} · Max occupancy {selectedRoom.guests}
+                    {occupancy === "single" ? "Single Occupancy" : "Double Occupancy"}
+                    {hasExtraBed ? " + Extra Bed" : ""}
                   </p>
                 </div>
               </div>
             )}
 
-            {/* Booking calculations */}
+            {/* Tariff Breakdown Table */}
             <div className="space-y-3 font-sans text-xs">
+              <div className="flex justify-between text-text-gray font-light">
+                <span>Branch Location</span>
+                <span className="text-text-offwhite font-medium text-right max-w-[220px] truncate">
+                  {selectedBranch.title}
+                </span>
+              </div>
               <div className="flex justify-between text-text-gray font-light">
                 <span>Check-in Date</span>
                 <span className="text-text-offwhite font-medium">{checkIn}</span>
@@ -515,24 +980,43 @@ function BookingContent() {
                 <span className="text-text-offwhite font-medium">{checkOut}</span>
               </div>
               <div className="flex justify-between text-text-gray font-light">
-                <span>Duration</span>
+                <span>Stay Duration</span>
                 <span className="text-text-offwhite font-medium">
                   {nights} night{nights > 1 ? "s" : ""}
                 </span>
               </div>
-              <div className="flex justify-between text-text-gray font-light">
-                <span>Guests</span>
-                <span className="text-text-offwhite font-medium">{guests} Adults</span>
-              </div>
 
               <div className="h-px bg-border-dark/30 w-full my-2" />
 
-              <div className="flex justify-between text-text-gray font-light">
-                <span>Base Sanctuary Rate</span>
-                <span className="text-text-offwhite">
-                  {formatPrice(basePrice)} x {nights}
-                </span>
-              </div>
+              {hasMultiRoomSelection ? (
+                <div className="flex justify-between text-text-gray font-light">
+                  <span>Chambers Subtotal</span>
+                  <span className="text-text-offwhite">
+                    {formatPrice(perNightTotalRate)} &times; {nights} = {formatPrice(baseTotal)}
+                  </span>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between text-text-gray font-light">
+                    <span>
+                      {selectedRoom.name} ({occupancy === "single" ? "Single" : "Double"})
+                    </span>
+                    <span className="text-text-offwhite">
+                      {formatPrice(perNightBaseRate)} &times; {nights} = {formatPrice(roomTotal)}
+                    </span>
+                  </div>
+
+                  {hasExtraBed && (
+                    <div className="flex justify-between text-text-gray font-light">
+                      <span>Extra Bed</span>
+                      <span className="text-text-offwhite">
+                        {formatPrice(EXTRA_BED_RATE)} &times; {nights} = {formatPrice(extraBedTotal)}
+                      </span>
+                    </div>
+                  )}
+                </>
+              )}
+
               <div className="flex justify-between text-text-gray font-light">
                 <span>Luxury GST (18%)</span>
                 <span className="text-text-offwhite">{formatPrice(luxuryTax)}</span>
@@ -544,39 +1028,64 @@ function BookingContent() {
                 <span className="text-xs uppercase tracking-[0.1em] text-text-offwhite font-semibold">
                   Estimated Total
                 </span>
-                <span className="font-serif text-xl md:text-2xl text-gold font-light">
+                <span className="font-serif text-2xl text-gold font-light">
                   {formatPrice(grandTotal)}
                 </span>
               </div>
             </div>
+
+            {/* Quick WhatsApp Action */}
+            <div className="pt-2 border-t border-border-dark/40">
+              <a
+                href={buildWhatsAppUrl({
+                  guestName: fullName || "Guest",
+                  roomName: hasMultiRoomSelection
+                    ? multiRoomItems.map((item) => `${item.count}x ${item.room.name}`).join(", ")
+                    : selectedRoom.name,
+                  propertyName: selectedBranch.name,
+                  occupancyType: hasMultiRoomSelection
+                    ? `${totalChambersCount} Chamber(s)`
+                    : (occupancy === "single" ? "Single Occupancy" : "Double Occupancy"),
+                  extraBeds: effectiveExtraBeds,
+                  checkIn: checkIn,
+                  checkOut: checkOut,
+                  duration: `${nights} nights`,
+                  guests: guests,
+                  specialRequests: requests,
+                  estimatedTotal: formatPrice(grandTotal),
+                  branchPhone: selectedBranch.phone,
+                })}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full py-3 bg-emerald-600/20 hover:bg-emerald-600 text-emerald-400 hover:text-white border border-emerald-500/40 rounded-xl text-xs uppercase tracking-wider font-medium transition-all flex items-center justify-center space-x-2"
+              >
+                <MessageSquare size={14} />
+                <span>Instant WhatsApp Enquiry</span>
+              </a>
+            </div>
           </div>
 
-          {/* Trust Banner / Booking Direct Benefits */}
-          <div className="bg-surface-dark/45 border border-border-dark/60 rounded-2xl p-6 space-y-4 shadow-lg">
+          {/* Privileges card */}
+          <div className="bg-surface-dark/45 border border-border-dark/60 rounded-2xl p-6 space-y-3 shadow-lg text-xs font-sans">
             <h4 className="text-[10px] uppercase tracking-[0.2em] text-gold font-medium">
-              Direct Reservation Privileges
+              Guest Stay Privileges
             </h4>
-            <ul className="space-y-3.5 text-xs text-text-gray font-light">
-              <li className="flex items-start space-x-2.5">
-                <span className="text-gold mt-0.5 font-sans font-medium text-sm">✓</span>
-                <div>
-                  <span className="font-medium text-text-offwhite block text-[11px] uppercase tracking-wider">Best Rate Guarantee</span>
-                  <span className="text-[10.5px] text-text-gray/70 leading-relaxed block mt-0.5">No hidden booking fees, commission markups, or service charges.</span>
-                </div>
+            <ul className="space-y-2.5 text-text-gray font-light text-[11px]">
+              <li className="flex items-center space-x-2">
+                <span className="text-gold">✓</span>
+                <span>South Indian Veg Buffet Breakfast Included</span>
               </li>
-              <li className="flex items-start space-x-2.5">
-                <span className="text-gold mt-0.5 font-sans font-medium text-sm">✓</span>
-                <div>
-                  <span className="font-medium text-text-offwhite block text-[11px] uppercase tracking-wider">Flexible 24-Hour Stay</span>
-                  <span className="text-[10.5px] text-text-gray/70 leading-relaxed block mt-0.5">Check in and check out at any hour. A full 24-hour stay starting from arrival.</span>
-                </div>
+              <li className="flex items-center space-x-2">
+                <span className="text-gold">✓</span>
+                <span>High-Speed Wi-Fi & In-Room Mini Bar</span>
               </li>
-              <li className="flex items-start space-x-2.5">
-                <span className="text-gold mt-0.5 font-sans font-medium text-sm">✓</span>
-                <div>
-                  <span className="font-medium text-text-offwhite block text-[11px] uppercase tracking-wider">Direct Concierge Communication</span>
-                  <span className="text-[10.5px] text-text-gray/70 leading-relaxed block mt-0.5">Direct chat review with desk management to customize your luxury arrangements.</span>
-                </div>
+              <li className="flex items-center space-x-2">
+                <span className="text-gold">✓</span>
+                <span>24/7 Room Service & Round-the-clock Desk</span>
+              </li>
+              <li className="flex items-center space-x-2">
+                <span className="text-gold">✓</span>
+                <span>Direct Helpline: +91 98847 62222</span>
               </li>
             </ul>
           </div>
@@ -595,7 +1104,7 @@ export default function BookingClient() {
           className="inline-flex items-center space-x-2 text-[10px] uppercase tracking-[0.2em] text-text-gray hover:text-gold transition-colors mb-6 group cursor-pointer"
         >
           <ArrowLeft size={10} className="group-hover:-translate-x-0.5 transition-transform" />
-          <span>Back to Stays</span>
+          <span>Back to Rooms</span>
         </Link>
 
         <Suspense

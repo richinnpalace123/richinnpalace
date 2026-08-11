@@ -2,10 +2,14 @@
 
 import { motion, Variants } from "framer-motion";
 import { whyChooseUs } from "@/lib/data";
-import { Compass, Sparkles, ChefHat, ShieldCheck } from "lucide-react";
+import { Utensils, Clock, Wifi, MapPin, Compass, Sparkles, ChefHat, ShieldCheck } from "lucide-react";
 
 export default function WhyChooseUsSection() {
   const iconMap = {
+    Utensils: Utensils,
+    Clock: Clock,
+    Wifi: Wifi,
+    MapPin: MapPin,
     Compass: Compass,
     Sparkles: Sparkles,
     ChefHat: ChefHat,

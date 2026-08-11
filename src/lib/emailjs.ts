@@ -10,6 +10,8 @@ export interface ReservationEmailParams {
   check_out: string;
   duration: string;
   guests: string | number;
+  occupancy_type?: string;
+  extra_bed?: string;
   special_requests: string;
   base_rate: string;
   gst: string;

@@ -109,7 +109,7 @@ export default function ReservationConfirmationView({
                 </span>
               </div>
               <h3 className="font-serif text-xl text-text-offwhite font-light">
-                {selectedRoom.name}
+                {reservationData.roomName || selectedRoom.name}
               </h3>
               {reservationData.propertyName && (
                 <p className="text-[11px] text-gold/90 font-sans font-medium tracking-wide">
@@ -139,12 +139,31 @@ export default function ReservationConfirmationView({
             <span className="text-text-offwhite font-medium">{reservationData.checkOut}</span>
           </div>
           <div className="flex justify-between py-2 border-b border-border-dark/30 sm:border-b-0">
-            <span className="text-text-gray/70">Duration</span>
-            <span className="text-text-offwhite font-medium">{reservationData.duration}</span>
+            <span className="text-text-gray/70">Occupancy Type</span>
+            <span className="text-text-offwhite font-medium">{reservationData.occupancyType || "Standard"}</span>
           </div>
           <div className="flex justify-between py-2 border-b border-border-dark/30 sm:border-b-0">
             <span className="text-text-gray/70">Party Size</span>
-            <span className="text-text-offwhite font-medium">{reservationData.guests} Adults</span>
+            <span className="text-text-offwhite font-medium">{reservationData.guests} Guest(s)</span>
+          </div>
+          {reservationData.extraBeds && reservationData.extraBeds > 0 ? (
+            <div className="flex justify-between py-2 border-b border-border-dark/30 sm:border-b-0 sm:col-span-2">
+              <span className="text-text-gray/70">Extra Bed Option</span>
+              <span className="text-gold font-medium">{reservationData.extraBeds} Extra Bed (+₹{reservationData.extraBeds * 700}/night)</span>
+            </div>
+          ) : null}
+        </div>
+
+        {/* Complimentary Inclusions Box */}
+        <div className="bg-gold/5 border border-gold/20 rounded-xl p-4 text-xs font-sans">
+          <span className="text-[9px] uppercase tracking-[0.2em] text-gold font-semibold block mb-2">
+            Included with Your Reservation
+          </span>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-text-gray text-[11px]">
+            <span className="flex items-center text-text-offwhite">✓ Complimentary South Indian Buffet Breakfast</span>
+            <span className="flex items-center text-text-offwhite">✓ High-Speed Wi-Fi</span>
+            <span className="flex items-center text-text-offwhite">✓ 24/7 Dedicated Room Service</span>
+            <span className="flex items-center text-text-offwhite">✓ In-Room Mini Bar Setup</span>
           </div>
         </div>
 
@@ -195,7 +214,7 @@ export default function ReservationConfirmationView({
           </a>
 
           <p className="text-[10px] text-text-gray/60 text-center font-light">
-            Connects with your details pre-filled to our Chennai concierge desk (+91 99402 41501).
+            Connects with your details pre-filled to our Chennai concierge desk (+91 98847 62222).
           </p>
         </div>
       </div>

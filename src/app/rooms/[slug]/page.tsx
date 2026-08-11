@@ -6,6 +6,7 @@ import AccordionFAQ from "./AccordionFAQ"; // Client component for FAQ interacti
 import StickyBookingPanel from "./StickyBookingPanel"; // Client component for sticky calculations
 import RoomGallery from "./RoomGallery"; // Client component for gallery interactivity
 import BranchDropdownSelector from "@/components/common/BranchDropdownSelector";
+import LuxuryImageSlider from "@/components/common/LuxuryImageSlider";
 import { SITE_CONFIG } from "@/lib/config";
 
 interface Props {
@@ -136,11 +137,14 @@ export default async function RoomDetailsPage({ params, searchParams }: Props) {
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         
 
-        {/* Gallery Grid */}
-        <RoomGallery 
-          roomName={room.name} 
-          initialImages={room.gallery.length >= 3 ? room.gallery.slice(0, 3) : [room.image, ...room.gallery.slice(1, 3)]} 
-        />
+        {/* Luxury Image Slider */}
+        <div className="mb-8 md:mb-14">
+          <LuxuryImageSlider
+            images={activeBranch?.gallery || room.gallery}
+            title={`${room.name} — ${activeBranch?.title || "Rich Inn Palace"}`}
+            badge={room.tag}
+          />
+        </div>
 
         {/* Two Column Layout: Description & Sticky Side Panel */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">

@@ -45,7 +45,7 @@ export default function ManifestoSection() {
               quietly promise.
             </h2>
             <p className="font-sans text-[11px] md:text-xs tracking-wide leading-relaxed text-text-gray/80 font-light max-w-xl">
-              Transparent luxury tariffs, 24-hour check-in flexibility, complimentary South Indian breakfast buffets, and 24/7 room service across our prime T. Nagar properties.
+              Transparent luxury tariffs, 24-hour check-in flexibility, complimentary South Indian breakfast buffets, and 24/7 room service across our prime T. Nagar &amp; Vadapalani properties.
             </p>
           </div>
 

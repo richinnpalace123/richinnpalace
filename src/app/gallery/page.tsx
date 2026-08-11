@@ -43,15 +43,18 @@ export const metadata: Metadata = {
 };
 
 const galleryImages = [
-  { src: "/images/photo1.avif", title: "Courtyard Sanctuaries", category: "Architecture" },
-  { src: "/images/photos2.avif", title: "Luxury Suite Chambers", category: "Suites" },
-  { src: "/images/photos3.jpg", title: "Private Plunge Pools", category: "Amenities" },
-  { src: "/images/photos4.jpg", title: "Twilight Lantern Corridor", category: "Atmosphere" },
-  { src: "/images/photos5.jpg", title: "Executive Dining Pavilion", category: "Culinary" },
-  { src: "/images/photos6.jpg", title: "Lime Plaster & Teak Architecture", category: "Design" },
-  { src: "/images/photos7.jpg", title: "Sun Terrace & Pool", category: "Outdoors" },
-  { src: "/images/photos8.jpg", title: "Ensuite Stone Bath", category: "Sanctuary" },
-  { src: "/images/photos9.jpg", title: "Garden Veranda", category: "Views" },
+  { src: "/images/rangon_street/1.jpeg", title: "Executive Room — Rangon Street", category: "Rangon Street" },
+  { src: "/images/pondy_bazaar/1.jpeg", title: "Deluxe Chamber — Pondy Bazar", category: "Pondy Bazar" },
+  { src: "/images/vadapalani/1.jpeg", title: "Suite Quarters — Vadapalani", category: "Vadapalani" },
+  { src: "/images/rangon_street/3.jpeg", title: "Suite Room Living Area", category: "Rangon Street" },
+  { src: "/images/pondy_bazaar/3.jpeg", title: "Boutique Suite Chamber", category: "Pondy Bazar" },
+  { src: "/images/vadapalani/3.jpeg", title: "Master Suite Quarters", category: "Vadapalani" },
+  { src: "/images/rangon_street/5.jpeg", title: "Plush Bedding & Comfort", category: "Rangon Street" },
+  { src: "/images/pondy_bazaar/6.jpeg", title: "Reception & Hospitality Desk", category: "Pondy Bazar" },
+  { src: "/images/vadapalani/6.jpeg", title: "Deluxe Suite Ambience", category: "Vadapalani" },
+  { src: "/images/rangon_street/7.jpeg", title: "Chamber Interiors", category: "Rangon Street" },
+  { src: "/images/pondy_bazaar/8.jpeg", title: "Guest Room Setup", category: "Pondy Bazar" },
+  { src: "/images/vadapalani/8.jpeg", title: "Premium Room Comfort", category: "Vadapalani" },
 ];
 
 export default function GalleryPage() {

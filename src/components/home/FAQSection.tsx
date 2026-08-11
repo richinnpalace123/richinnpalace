@@ -2,49 +2,49 @@
 
 import { useState } from "react";
 import { motion, AnimatePresence, Variants } from "framer-motion";
-import { MapPin, Plane, Utensils, Clock, DollarSign, BedDouble, Tv, ChevronDown } from "lucide-react";
+import { MapPin, Utensils, Clock, DollarSign, BedDouble, Wifi, ChevronDown, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const homeFAQs = [
   {
     icon: MapPin,
-    question: "What is the distance between the city centre and the Rich Inn Palace Tnagar?",
-    answer: "The Rich Inn Palace Tnagar is located right in the centre of Chennai, offering convenient access to major shopping districts, corporate hubs, and cultural landmarks."
-  },
-  {
-    icon: Plane,
-    question: "What is the nearest airport from Rich Inn Palace Tnagar?",
-    answer: "The nearest airport is Chennai International Airport (MAA), located within 5 km from Rich Inn Palace Tnagar. We offer private executive car transfers to and from the airport."
-  },
-  {
-    icon: Utensils,
-    question: "Are there any restaurants near the hotel?",
-    answer: "Guests can enjoy authentic regional cuisine at Karaikudi Chettinad Mess, serving exquisite Indian dishes just a short walk from the hotel. Additional luxury dining options are also nearby."
-  },
-  {
-    icon: Clock,
-    question: "What is the time for check-in and check-out at the 3-star Rich Inn Palace Tnagar?",
-    answer: "At Rich Inn Palace Tnagar, check-in is welcome from 12:00 PM, and check-out is requested by 11:00 AM. Requests for early arrival or late departure are subject to unhurried availability."
+    question: "Where are the 3 Rich Inn Palace branches located in Chennai?",
+    answer: "We have two branches in T. Nagar: Rangan Street (T. Nagar) and Rajabather Street (Pondy Bazaar, T. Nagar), and our third branch in Saligramam (Vadapalani), near Murugan Temple and SIMS Hospital."
   },
   {
     icon: DollarSign,
-    question: "What is the minimum price of a room in Rich Inn Palace Tnagar?",
-    answer: "Room rates at Rich Inn Palace Tnagar start from $34 per night. Rates may vary based on seasonal selections and availability."
+    question: "What are the room tariffs across branches?",
+    answer: "At our T. Nagar branches, Executive Rooms are ₹3,200 (Single) / ₹3,800 (Double) and Suite Rooms are ₹4,800 (Single) / ₹5,600 (Double). At our Vadapalani branch, Executive Rooms are ₹2,800 (Single) / ₹3,200 (Double) and Suite Rooms are ₹3,200 (Single) / ₹3,600 (Double). Extra beds are ₹700 per night."
+  },
+  {
+    icon: Utensils,
+    question: "Is complimentary breakfast included in the stay?",
+    answer: "Yes! Every direct booking includes an authentic complimentary South Indian vegetarian buffet breakfast freshly prepared each morning."
+  },
+  {
+    icon: Clock,
+    question: "What is your check-in and check-out policy?",
+    answer: "We offer true 24-hour flexible check-in and check-out across all branches, allowing you to enjoy a full 24-hour stay starting from your arrival time."
   },
   {
     icon: BedDouble,
-    question: "What room options does the inn offer?",
-    answer: "Our chambers feature multiple premium formats tailored to your comfort, including: the Family Suite, the Executive Suite, and the Deluxe Queen Room."
+    question: "Can an extra bed be added for children or additional guests?",
+    answer: "Yes, rollaway extra beds can easily be added to both Executive and Suite rooms for ₹700 per night."
   },
   {
-    icon: Tv,
-    question: "What are the room amenities at Rich Inn Palace Tnagar?",
-    answer: "Most rooms at Rich Inn Palace Tnagar are meticulously furnished with a writing table, a flat-screen TV with satellite channels, high-speed Wi-Fi, and a climate-control air conditioner."
+    icon: Wifi,
+    question: "What in-room amenities and services are provided?",
+    answer: "All rooms include high-speed Wi-Fi, 24/7 room service, in-room mini bar setups, individually controlled air conditioning, smart HD TVs, and daily housekeeping."
+  },
+  {
+    icon: Phone,
+    question: "How can I make an instant reservation or contact the desk?",
+    answer: "You can book directly on our website or contact our 24/7 central desk directly via phone or WhatsApp at +91 98847 62222."
   }
 ];
 
 export default function FAQSection() {
-  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [openIndex, setOpenIndex] = useState<number | null>(0);
 
   const toggleFAQ = (index: number) => {
     setOpenIndex(openIndex === index ? null : index);
@@ -92,14 +92,14 @@ export default function FAQSection() {
           {/* Left Column: Title */}
           <div className="lg:col-span-4 lg:sticky lg:top-1/2 lg:-translate-y-1/2 lg:h-fit text-left flex flex-col items-start justify-center">
             <span className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-sans font-medium mb-3 block">
-              05 · FAQ
+              05 · FREQUENTLY ASKED
             </span>
             <h2 className="font-serif text-3xl md:text-5xl text-text-offwhite font-light tracking-wide leading-[1.15] mb-6">
-              Frequently <br />
-              Asked Questions.
+              Essential Stay <br />
+              Information.
             </h2>
             <p className="font-sans text-xs tracking-wide leading-relaxed text-text-gray/80 font-light max-w-sm">
-              A brief guide to your stay, dining, directions, and accommodations at our Chennai sanctuary.
+              Answers regarding our 3 Chennai branches, single/double tariffs, breakfast inclusions, 24/7 room service, and booking policies.
             </p>
           </div>
 

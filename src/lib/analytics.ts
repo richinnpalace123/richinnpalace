@@ -59,7 +59,7 @@ export function trackRoomView(roomId: string, roomCategory?: string, price?: num
   });
 }
 
-export function trackBookNowClick(source: "hero" | "navbar" | "featured_rooms" | "rooms_catalog" | "room_detail" | "footer", roomId?: string) {
+export function trackBookNowClick(source: "hero" | "navbar" | "featured_rooms" | "featured_branches" | "rooms_catalog" | "room_detail" | "footer", roomId?: string) {
   trackEvent("book_now_click", {
     source,
     room_id: roomId || "unspecified",
@@ -122,7 +122,7 @@ export function trackReservationFailed(roomId: string, errorType: string) {
   });
 }
 
-export function trackWhatsAppClick(source: "navbar" | "floating" | "footer" | "booking_confirmation" | "contact_page", roomId?: string) {
+export function trackWhatsAppClick(source: "navbar" | "floating" | "footer" | "booking_confirmation" | "modal_confirmation" | "contact_page", roomId?: string) {
   trackEvent("whatsapp_clicked", {
     source,
     room_id: roomId || "general",

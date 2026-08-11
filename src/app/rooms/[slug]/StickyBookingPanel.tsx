@@ -1,11 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import { formatPrice } from "@/lib/utils";
-import { Calendar, Users, Info } from "lucide-react";
-import { rooms } from "@/lib/data";
-
+import { Calendar, Users, Info, BedDouble, Check } from "lucide-react";
+import { rooms, branches, getRoomPrice, EXTRA_BED_RATE } from "@/lib/data";
 import { trackBookNowClick } from "@/lib/analytics";
 
 interface StickyBookingPanelProps {
@@ -14,10 +13,9 @@ interface StickyBookingPanelProps {
   selectedBranchId?: string;
 }
 
-export default function StickyBookingPanel({ roomPrice, roomId, selectedBranchId }: StickyBookingPanelProps) {
+export default function StickyBookingPanel({ roomId, selectedBranchId = "tnagar-rangan" }: StickyBookingPanelProps) {
   const router = useRouter();
 
-  // Get default dates (tomorrow and day after)
   const getTomorrowString = (offsetDays = 1) => {
     const d = new Date();
     d.setDate(d.getDate() + offsetDays);
@@ -26,14 +24,23 @@ export default function StickyBookingPanel({ roomPrice, roomId, selectedBranchId
 
   const [checkIn, setCheckIn] = useState(getTomorrowString(1));
   const [checkOut, setCheckOut] = useState(getTomorrowString(2));
+  const [occupancy, setOccupancy] = useState<"single" | "double">("double");
+  const [hasExtraBed, setHasExtraBed] = useState(false);
   const [guests, setGuests] = useState(2);
 
-  // Derive maximum allowed guests for this room
-  const activeRoom = rooms.find((r) => r.id === roomId);
-  const maxGuests = activeRoom ? parseInt(activeRoom.guests, 10) || 2 : 4;
+  const activeRoom = rooms.find((r) => r.id === roomId || r.slug === roomId) || rooms[0];
+  const activeBranch = branches.find((b) => b.id === selectedBranchId) || branches[0];
 
-  // Calculate nights directly in render scope
-  const nights = (() => {
+  // Dynamic tariff based on branch & occupancy
+  const perNightRoomRate = useMemo(() => {
+    return getRoomPrice(activeRoom.id, activeBranch.id, occupancy);
+  }, [activeRoom.id, activeBranch.id, occupancy]);
+
+  const perNightExtraBedRate = hasExtraBed ? EXTRA_BED_RATE : 0;
+  const perNightTotalRate = perNightRoomRate + perNightExtraBedRate;
+
+  // Calculate nights
+  const nights = useMemo(() => {
     const start = new Date(checkIn);
     const end = new Date(checkOut);
     if (end > start) {
@@ -41,49 +48,106 @@ export default function StickyBookingPanel({ roomPrice, roomId, selectedBranchId
       return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
     }
     return 1;
-  })();
+  }, [checkIn, checkOut]);
 
   // Calculations
-  const baseTotal = roomPrice * nights;
-  const luxuryTax = Math.round(baseTotal * 0.18); // 18% GST for luxury hotel
+  const roomTotal = perNightRoomRate * nights;
+  const extraBedTotal = perNightExtraBedRate * nights;
+  const baseTotal = roomTotal + extraBedTotal;
+  const luxuryTax = Math.round(baseTotal * 0.18);
   const grandTotal = baseTotal + luxuryTax;
 
   const handleBookNow = () => {
-    trackBookNowClick("room_detail", roomId);
-    // Ensure guests does not exceed max capacity
-    const validatedGuests = Math.min(guests, maxGuests);
+    trackBookNowClick("room_detail", activeRoom.id);
     const branchQuery = selectedBranchId ? `&branch=${selectedBranchId}` : "";
+    const extraBedQuery = hasExtraBed ? `&extrabed=1` : "";
     router.push(
-      `/booking?room=${roomId}&checkin=${checkIn}&checkout=${checkOut}&guests=${validatedGuests}${branchQuery}`
+      `/booking?room=${activeRoom.id}&checkin=${checkIn}&checkout=${checkOut}&guests=${guests}&occupancy=${occupancy}${branchQuery}${extraBedQuery}`
     );
   };
 
   return (
     <div className="bg-surface-dark border border-border-dark rounded-2xl p-6 md:p-8 space-y-6 shadow-xl">
-      {/* Price Heading */}
-      <div className="flex items-baseline justify-between">
-        <span className="text-[10px] uppercase tracking-[0.2em] text-text-gray/70">
-          Sanctuary Rate
+      {/* Branch & Tariff Indicator */}
+      <div className="space-y-1">
+        <span className="text-[9px] uppercase tracking-[0.2em] text-text-gray/70 block">
+          Tariff for {activeBranch.title}
         </span>
-        <div className="text-right">
+        <div className="flex items-baseline justify-between">
           <span className="font-serif text-2xl md:text-3xl text-gold font-light">
-            {formatPrice(roomPrice)}
+            {formatPrice(perNightTotalRate)}
           </span>
-          <span className="text-[10px] font-sans text-text-gray/50 block font-light">
-            per night (excl. tax)
+          <span className="text-[10px] font-sans text-text-gray/50 font-light">
+            /night (excl. 18% GST)
           </span>
         </div>
       </div>
 
       <div className="h-px bg-border-dark/60 w-full" />
 
-      {/* Date & Guest Form controls */}
-      <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-3">
+      {/* Occupancy Selector */}
+      <div className="space-y-2">
+        <label className="text-[9px] uppercase tracking-[0.2em] text-gold font-medium block">
+          Occupancy
+        </label>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={() => {
+              setOccupancy("single");
+              setGuests(1);
+            }}
+            className={`py-2 px-3 rounded-lg border text-xs font-sans transition-all cursor-pointer ${
+              occupancy === "single"
+                ? "bg-gold/15 border-gold text-gold font-medium"
+                : "bg-bg-dark border-border-dark text-text-gray hover:border-gold/40"
+            }`}
+          >
+            Single ({formatPrice(getRoomPrice(activeRoom.id, activeBranch.id, "single"))})
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setOccupancy("double");
+              setGuests(2);
+            }}
+            className={`py-2 px-3 rounded-lg border text-xs font-sans transition-all cursor-pointer ${
+              occupancy === "double"
+                ? "bg-gold/15 border-gold text-gold font-medium"
+                : "bg-bg-dark border-border-dark text-text-gray hover:border-gold/40"
+            }`}
+          >
+            Double ({formatPrice(getRoomPrice(activeRoom.id, activeBranch.id, "double"))})
+          </button>
+        </div>
+      </div>
+
+      {/* Extra Bed Toggle */}
+      <div className="pt-1">
+        <label
+          onClick={() => setHasExtraBed(!hasExtraBed)}
+          className="flex items-center justify-between p-2.5 rounded-lg bg-bg-dark border border-border-dark/70 hover:border-gold/40 transition-colors cursor-pointer text-xs"
+        >
+          <div className="flex items-center space-x-2">
+            <input
+              type="checkbox"
+              checked={hasExtraBed}
+              onChange={(e) => setHasExtraBed(e.target.checked)}
+              className="accent-gold cursor-pointer"
+            />
+            <span className="text-text-offwhite text-[11px]">Extra Bed (+₹700/nt)</span>
+          </div>
+          <span className="text-[10px] text-gold font-mono">₹700</span>
+        </label>
+      </div>
+
+      {/* Date controls */}
+      <div className="space-y-3">
+        <div className="grid grid-cols-2 gap-2">
           {/* Check In */}
-          <div className="flex flex-col space-y-1.5">
-            <label className="text-[9px] uppercase tracking-[0.2em] text-gold font-medium flex items-center">
-              <Calendar size={11} className="mr-1.5" />
+          <div className="flex flex-col space-y-1">
+            <label className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium flex items-center">
+              <Calendar size={10} className="mr-1 text-gold" />
               Check In
             </label>
             <input
@@ -92,67 +156,57 @@ export default function StickyBookingPanel({ roomPrice, roomId, selectedBranchId
               min={getTomorrowString(0)}
               onChange={(e) => {
                 setCheckIn(e.target.value);
-                // Ensure check out is at least 1 day after check in
                 const nextDay = new Date(e.target.value);
                 nextDay.setDate(nextDay.getDate() + 1);
-                const nextDayStr = nextDay.toISOString().split("T")[0];
                 if (checkOut <= e.target.value) {
-                  setCheckOut(nextDayStr);
+                  setCheckOut(nextDay.toISOString().split("T")[0]);
                 }
               }}
-              className="bg-bg-dark border border-border-dark rounded-lg p-2.5 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full [color-scheme:dark]"
+              className="bg-bg-dark border border-border-dark rounded-lg p-2 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full [color-scheme:dark]"
             />
           </div>
 
           {/* Check Out */}
-          <div className="flex flex-col space-y-1.5">
-            <label className="text-[9px] uppercase tracking-[0.2em] text-gold font-medium flex items-center">
-              <Calendar size={11} className="mr-1.5" />
+          <div className="flex flex-col space-y-1">
+            <label className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium flex items-center">
+              <Calendar size={10} className="mr-1 text-gold" />
               Check Out
             </label>
             <input
               type="date"
               value={checkOut}
-              min={checkIn ? (() => {
-                const nextDay = new Date(checkIn);
-                nextDay.setDate(nextDay.getDate() + 1);
-                return nextDay.toISOString().split("T")[0];
-              })() : getTomorrowString(1)}
+              min={checkIn}
               onChange={(e) => setCheckOut(e.target.value)}
-              className="bg-bg-dark border border-border-dark rounded-lg p-2.5 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full [color-scheme:dark]"
+              className="bg-bg-dark border border-border-dark rounded-lg p-2 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full [color-scheme:dark]"
             />
           </div>
         </div>
+      </div>
 
-        {/* Guest selector */}
-        <div className="flex flex-col space-y-1.5">
-          <label className="text-[9px] uppercase tracking-[0.2em] text-gold font-medium flex items-center">
-            <Users size={11} className="mr-1.5" />
-            Guests (Max {maxGuests})
-          </label>
-          <select
-            value={guests > maxGuests ? maxGuests : guests}
-            onChange={(e) => setGuests(parseInt(e.target.value, 10))}
-            className="bg-bg-dark border border-border-dark rounded-lg p-2.5 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full cursor-pointer appearance-none"
-          >
-            {Array.from({ length: maxGuests }, (_, i) => i + 1).map((num) => (
-              <option key={num} value={num}>
-                {num} {num === 1 ? "Guest" : "Guests"}
-              </option>
-            ))}
-          </select>
-        </div>
+      {/* Inclusions summary */}
+      <div className="p-3 rounded-lg bg-gold/5 border border-gold/15 text-[10px] text-text-gray space-y-1">
+        <div className="text-gold font-medium uppercase tracking-wider text-[9px]">Included With Stay:</div>
+        <div className="flex items-center text-text-offwhite">✓ Complimentary South Indian Buffet Breakfast</div>
+        <div className="flex items-center text-text-offwhite">✓ High-Speed Wi-Fi & 24/7 Room Service</div>
       </div>
 
       {/* Calculations Breakdown */}
-      <div className="space-y-3 pt-2">
-        <div className="flex justify-between text-xs text-text-gray font-light">
+      <div className="space-y-2.5 pt-1 text-xs">
+        <div className="flex justify-between text-text-gray font-light">
           <span>
-            {formatPrice(roomPrice)} &times; {nights} {nights === 1 ? "night" : "nights"}
+            {formatPrice(perNightRoomRate)} &times; {nights} {nights === 1 ? "night" : "nights"}
           </span>
-          <span className="text-text-offwhite font-medium">{formatPrice(baseTotal)}</span>
+          <span className="text-text-offwhite font-medium">{formatPrice(roomTotal)}</span>
         </div>
-        <div className="flex justify-between text-xs text-text-gray font-light">
+
+        {hasExtraBed && (
+          <div className="flex justify-between text-text-gray font-light">
+            <span>Extra Bed ({formatPrice(EXTRA_BED_RATE)} &times; {nights})</span>
+            <span className="text-text-offwhite font-medium">{formatPrice(extraBedTotal)}</span>
+          </div>
+        )}
+
+        <div className="flex justify-between text-text-gray font-light">
           <span className="flex items-center">
             Luxury GST (18%)
             <span className="ml-1 text-text-gray/40 cursor-help" title="Standard GST for luxury hotel tariffs">
@@ -162,7 +216,7 @@ export default function StickyBookingPanel({ roomPrice, roomId, selectedBranchId
           <span className="text-text-offwhite font-medium">{formatPrice(luxuryTax)}</span>
         </div>
 
-        <div className="h-px bg-border-dark/40 w-full my-2" />
+        <div className="h-px bg-border-dark/40 w-full my-1.5" />
 
         <div className="flex justify-between items-baseline pt-1">
           <span className="text-xs uppercase tracking-[0.15em] text-text-offwhite font-medium">
@@ -178,14 +232,13 @@ export default function StickyBookingPanel({ roomPrice, roomId, selectedBranchId
       <button
         type="button"
         onClick={handleBookNow}
-        className="w-full py-4 bg-gold text-bg-dark text-xs uppercase tracking-[0.2em] font-medium rounded-full hover:bg-gold-hover transition-all duration-300 transform active:scale-[0.98] shadow-lg hover:shadow-[0_0_20px_rgba(199,168,109,0.3)] cursor-pointer"
+        className="w-full py-3.5 bg-gold text-bg-dark text-xs uppercase tracking-[0.2em] font-medium rounded-full hover:bg-gold-hover transition-all duration-300 transform active:scale-[0.98] shadow-lg hover:shadow-[0_0_20px_rgba(199,168,109,0.3)] cursor-pointer"
       >
-        Book Sanctuary
+        Continue to Reserve
       </button>
 
-      {/* Micro Copy */}
       <div className="text-[10px] text-text-gray/60 text-center font-light leading-relaxed">
-        No upfront payment required today. Direct enquiry review by desk concierge.
+        Direct helpline: <a href="tel:+919884762222" className="text-gold hover:underline font-medium">+91 98847 62222</a>
       </div>
     </div>
   );

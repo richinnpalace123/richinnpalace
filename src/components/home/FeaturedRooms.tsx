@@ -4,12 +4,11 @@ import { useState, useRef } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, Variants } from "framer-motion";
-import { rooms } from "@/lib/data";
-import { ArrowRight, Maximize2, Users } from "lucide-react";
-import { formatPrice } from "@/lib/utils";
-import { trackRoomView, trackBookNowClick } from "@/lib/analytics";
+import { branches } from "@/lib/data";
+import { ArrowRight, MapPin, Coffee, Wifi } from "lucide-react";
+import { trackBookNowClick } from "@/lib/analytics";
 
-function RoomCardMedia({ src, alt, video }: { src: string; alt: string; video?: string }) {
+function BranchCardMedia({ src, alt, video }: { src: string; alt: string; video?: string }) {
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -78,7 +77,7 @@ export default function FeaturedRooms() {
   };
 
   return (
-    <section id="featured-rooms" className="pt-8 pb-8 md:py-32 bg-bg-dark font-sans relative overflow-hidden">
+    <section id="featured-rooms" className="pt-8 pb-8 md:py-28 bg-bg-dark font-sans relative overflow-hidden">
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10">
         {/* Section Header */}
         <motion.div
@@ -86,23 +85,25 @@ export default function FeaturedRooms() {
           initial="hidden"
           whileInView="visible"
           viewport={{ once: true, margin: "-100px" }}
-          className="mb-6 md:mb-10 text-left"
+          className="mb-8 md:mb-12 text-left"
         >
           <h2 className="text-[10px] md:text-xs uppercase tracking-[0.25em] text-gold font-sans font-medium mb-3 block">
-            02 · FEATURED STAYS
+            02 · OUR 3 CHENNAI BRANCHES
           </h2>
-          <h4 className="font-serif text-3xl md:text-5xl text-text-offwhite font-light tracking-wide leading-tight max-w-xl">
-            Rooms that keep <br className="hidden md:inline" />
-            their own light.
+          <h4 className="font-serif text-3xl md:text-5xl text-text-offwhite font-light tracking-wide leading-tight max-w-2xl">
+            Choose your branch to view tariffs &amp; rooms.
           </h4>
+          <p className="font-sans text-xs md:text-sm text-text-gray font-light leading-relaxed mt-3 max-w-xl">
+            Click any branch to view the 4 room varieties (Single &amp; Double Executive/Suite rooms) with complete pricing, buffet breakfast, and inclusions.
+          </p>
         </motion.div>
 
-        {/* Carousel on Mobile, Grid on Desktop */}
+        {/* 3 Branches Cards Grid */}
         <div className="relative">
           <div className="flex md:grid md:grid-cols-3 gap-6 md:gap-8 overflow-x-auto md:overflow-x-visible no-scrollbar snap-x snap-mandatory -mx-6 px-6 md:mx-0 md:px-0">
-            {rooms.slice(0, 3).map((room, index) => (
+            {branches.map((branch, index) => (
               <motion.div
-                key={room.id}
+                key={branch.id}
                 custom={index}
                 variants={cardVariants}
                 initial="hidden"
@@ -111,36 +112,31 @@ export default function FeaturedRooms() {
                 className="w-[85vw] sm:w-[50vw] md:w-auto shrink-0 snap-start snap-always flex flex-col group cursor-pointer"
               >
                 <Link
-                  href={`/rooms/${room.slug}`}
-                  onClick={() => {
-                    trackRoomView(room.id, room.tag, room.price);
-                    trackBookNowClick("featured_rooms", room.id);
-                  }}
+                  href={`/branches/${branch.slug}`}
+                  scroll={true}
+                  onClick={() => trackBookNowClick("featured_branches", branch.id)}
                   className="flex-grow flex flex-col"
                 >
                   {/* Image Container with Badges & Video Hover */}
-                  <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-surface-dark mb-5">
+                  <div className="relative aspect-[4/5] w-full rounded-2xl overflow-hidden bg-surface-dark mb-4 border border-border-dark/60 group-hover:border-gold/40 transition-all duration-500 shadow-xl">
 
-                    {/* Category floating badge */}
+                    {/* Area tag floating badge */}
                     <div className="absolute top-4 left-4 z-20">
-                      <span className="px-3.5 py-1.5 glass border border-border-dark text-[9px] uppercase tracking-[0.2em] font-sans font-medium text-text-offwhite rounded-full">
-                        {room.tag}
+                      <span className="px-3 py-1.5 glass border border-border-dark text-[9px] uppercase tracking-[0.2em] font-sans font-semibold text-text-offwhite rounded-full">
+                        {branch.area}
                       </span>
                     </div>
 
                     {/* Room main image / video hover */}
                     <div className="relative w-full h-full transition-transform duration-700 ease-out group-hover:scale-105">
-                      <RoomCardMedia src={room.image} alt={room.name} video={room.video} />
+                      <BranchCardMedia src={branch.image} alt={branch.name} video={branch.video} />
                     </div>
 
                     {/* Title overlay inside card */}
-                    <div className="absolute inset-0 z-10 bg-gradient-to-t from-bg-dark/85 via-bg-dark/10 to-transparent flex flex-col justify-end p-6 md:p-8 pointer-events-none">
-                      <h3 className="font-serif text-2xl md:text-3xl text-text-offwhite font-light mb-1.5 group-hover:text-gold transition-colors duration-300">
-                        {room.name}
+                    <div className="absolute inset-0 z-10 bg-gradient-to-t from-bg-dark/95 via-bg-dark/30 to-transparent flex flex-col justify-end p-6 md:p-7 pointer-events-none">
+                      <h3 className="font-serif text-xl md:text-2xl text-text-offwhite font-light mb-1 group-hover:text-gold transition-colors duration-300 leading-snug">
+                        {branch.title}
                       </h3>
-                      <p className="font-sans text-xs text-text-gray/80 font-light italic">
-                        {room.description}
-                      </p>
                     </div>
                   </div>
 
@@ -150,31 +146,19 @@ export default function FeaturedRooms() {
                     {/* Price details */}
                     <div className="flex flex-col">
                       <span className="text-[9px] uppercase tracking-[0.15em] text-text-gray/60">
-                        From
+                        Tariff From
                       </span>
-                      <span className="font-serif text-base text-text-offwhite font-light">
-                        {formatPrice(room.price)}
-                        <span className="font-sans text-[10px] text-text-gray/50 lowercase">
+                      <span className="font-serif text-xl md:text-2xl text-gold font-light">
+                        {branch.startingPriceDisplay}
+                        <span className="font-sans text-xs text-text-gray/50 lowercase ml-1">
                           /night
                         </span>
                       </span>
                     </div>
 
-                    {/* Dimensions & Guests */}
-                    <div className="flex items-center space-x-4 text-[10px] tracking-[0.1em] font-sans font-light">
-                      <span className="flex items-center">
-                        <Maximize2 size={10} className="mr-1 text-gold/60" />
-                        {room.size.replace(" ", "")}
-                      </span>
-                      <span className="flex items-center">
-                        <Users size={10} className="mr-1 text-gold/60" />
-                        {room.guests.split(" ")[0]}G
-                      </span>
-                    </div>
-
                     {/* Booking Arrow CTA */}
-                    <div className="w-8 h-8 rounded-full border border-border-dark flex items-center justify-center group-hover:border-gold group-hover:bg-gold group-hover:text-bg-dark transition-all duration-300">
-                      <ArrowRight size={12} className="group-hover:translate-x-0.5 transition-transform duration-300" />
+                    <div className="w-9 h-9 rounded-full border border-border-dark flex items-center justify-center group-hover:border-gold group-hover:bg-gold group-hover:text-bg-dark transition-all duration-300">
+                      <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform duration-300" />
                     </div>
 
                   </div>
@@ -185,12 +169,12 @@ export default function FeaturedRooms() {
         </div>
 
         {/* Explore All Stays CTA */}
-        <div className="text-center mt-10 md:mt-20">
+        <div className="text-center mt-10 md:mt-16">
           <Link
             href="/rooms"
             className="inline-flex items-center space-x-3 text-xs uppercase tracking-[0.2em] text-gold hover:text-text-offwhite transition-colors duration-300 group"
           >
-            <span>View All Chambers</span>
+            <span>View All Rooms &amp; Tariffs</span>
             <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform duration-300" />
           </Link>
         </div>

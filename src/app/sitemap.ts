@@ -1,5 +1,5 @@
 import { MetadataRoute } from "next";
-import { rooms } from "@/lib/data";
+import { rooms, branches } from "@/lib/data";
 import { SITE_CONFIG } from "@/lib/config";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -51,6 +51,14 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
   ];
 
+  // Dynamic branch routes
+  const branchRoutes = branches.map((branch) => ({
+    url: `${baseUrl}/branches/${branch.slug}`,
+    lastModified: new Date(),
+    changeFrequency: "weekly" as const,
+    priority: 0.9,
+  }));
+
   // Dynamic room routes
   const roomRoutes = rooms.map((room) => ({
     url: `${baseUrl}/rooms/${room.slug}`,
@@ -59,5 +67,6 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     priority: 0.8,
   }));
 
-  return [...staticRoutes, ...roomRoutes];
+  return [...staticRoutes, ...branchRoutes, ...roomRoutes];
 }
+
