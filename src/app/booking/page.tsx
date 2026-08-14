@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     siteName: "Rich Inn Palace Hotel",
     images: [
       {
-        url: "/images/photo1.avif",
+        url: "/images/rangon_street/1.jpeg",
         width: 1200,
         height: 630,
         alt: "Reserve Your Stay at Rich Inn Palace Chennai",
@@ -41,7 +41,7 @@ export const metadata: Metadata = {
     title: "Reserve Your Stay | Rich Inn Palace Chennai",
     description:
       "Secure your stay at Rich Inn Palace Chennai. Experience private butler care and unhurried luxury.",
-    images: ["/images/photo1.avif"],
+    images: ["/images/rangon_street/1.jpeg"],
   },
 };
 

@@ -27,7 +27,7 @@ export default function LuxuryImageSlider({
   badge = "Exclusive Sanctuary Gallery",
   autoPlayInterval = 5000,
 }: LuxuryImageSliderProps) {
-  const validImages = images.length > 0 ? images : ["/images/photos4.jpg"];
+  const validImages = images.length > 0 ? images : ["/images/rangon_street/1.jpeg"];
   const [currentIndex, setCurrentIndex] = useState(0);
   const [direction, setDirection] = useState(0);
   const [isAutoPlaying, setIsAutoPlaying] = useState(true);
@@ -145,7 +145,7 @@ export default function LuxuryImageSlider({
           </AnimatePresence>
 
           {/* Top Bar: Badge & Action Controls */}
-          <div className="absolute top-4 left-4 right-4 z-20 flex items-center justify-between pointer-events-auto">
+          <div className="absolute top-4 left-4 right-4 z-30 flex items-center justify-between pointer-events-auto">
             {/* Gallery Badge */}
             <div className="flex items-center space-x-2 px-3 py-1.5 rounded-full bg-bg-dark/70 backdrop-blur-md border border-gold/30 text-[9px] uppercase tracking-[0.2em] font-sans font-medium text-gold">
               <Sparkles size={11} className="text-gold animate-pulse" />
@@ -165,11 +165,15 @@ export default function LuxuryImageSlider({
                 onClick={(e) => {
                   e.stopPropagation();
                   setIsFullscreen(true);
+                  if (typeof document !== "undefined" && document.documentElement?.requestFullscreen) {
+                    document.documentElement.requestFullscreen().catch(() => {});
+                  }
                 }}
-                className="w-8 h-8 rounded-full bg-bg-dark/70 backdrop-blur-md border border-border-dark hover:border-gold text-text-gray hover:text-gold flex items-center justify-center transition-all cursor-pointer"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-bg-dark/80 backdrop-blur-md border border-border-dark/80 hover:border-gold hover:bg-gold hover:text-bg-dark text-text-offwhite flex items-center justify-center transition-all duration-300 transform active:scale-95 shadow-lg cursor-pointer"
+                aria-label="View Fullscreen"
                 title="View Fullscreen"
               >
-                <Maximize2 size={13} />
+                <Maximize2 size={16} />
               </button>
             </div>
           </div>

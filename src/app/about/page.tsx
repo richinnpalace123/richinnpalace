@@ -25,7 +25,7 @@ export const metadata: Metadata = {
     siteName: "Rich Inn Palace Hotel",
     images: [
       {
-        url: "/images/photo1.avif",
+        url: "/images/rangon_street/1.jpeg",
         width: 1200,
         height: 630,
         alt: "Rich Inn Palace Heritage & Story",
@@ -39,7 +39,7 @@ export const metadata: Metadata = {
     title: "Heritage & Philosophy | Rich Inn Palace Chennai",
     description:
       "Discover the story of Rich Inn Palace Chennai. Established in 2001.",
-    images: ["/images/photo1.avif"],
+    images: ["/images/rangon_street/1.jpeg"],
   },
 };
 
@@ -65,7 +65,7 @@ export default function AboutPage() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-24">
           <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-surface-dark border border-border-dark/50">
             <Image
-              src="/images/photo1.avif"
+              src="/images/rangon_street/1.jpeg"
               alt="Courtyard at Rich Inn Palace Chennai"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"
@@ -75,7 +75,7 @@ export default function AboutPage() {
           </div>
           <div className="relative aspect-[16/10] rounded-2xl overflow-hidden bg-surface-dark border border-border-dark/50">
             <Image
-              src="/images/photo2.avif"
+              src="/images/pondy_bazaar/1.jpeg"
               alt="Private Suite Architecture Rich Inn Palace Chennai"
               fill
               sizes="(max-width: 768px) 100vw, 50vw"

@@ -28,47 +28,16 @@ import { buildWhatsAppUrl } from "@/lib/whatsapp";
 import LuxuryImageSlider from "@/components/common/LuxuryImageSlider";
 import GuestBookingModal from "@/components/booking/GuestBookingModal";
 
-function RoomVarietyMedia({ src, alt, video }: { src: string; alt: string; video?: string }) {
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const [isHovered, setIsHovered] = useState(false);
-
+function RoomVarietyMedia({ src, alt }: { src: string; alt: string }) {
   return (
-    <div
-      className="relative w-full h-full"
-      onMouseEnter={() => {
-        setIsHovered(true);
-        if (videoRef.current) {
-          videoRef.current.play().catch(() => {});
-        }
-      }}
-      onMouseLeave={() => {
-        setIsHovered(false);
-        if (videoRef.current) {
-          videoRef.current.pause();
-          videoRef.current.currentTime = 0;
-        }
-      }}
-    >
+    <div className="relative w-full h-full">
       <Image
         src={src}
         alt={alt}
         fill
         sizes="(max-width: 768px) 100vw, 200px"
-        className={`object-cover transition-opacity duration-500 ${isHovered && video ? "opacity-0" : "opacity-100"}`}
+        className="object-cover"
       />
-      {video && (
-        <video
-          ref={videoRef}
-          src={video}
-          muted
-          loop
-          playsInline
-          preload="none"
-          className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-500 pointer-events-none ${
-            isHovered ? "opacity-100" : "opacity-0"
-          }`}
-        />
-      )}
     </div>
   );
 }
@@ -201,6 +170,19 @@ export default function BranchDetailsClient({ branch, allBranches }: BranchDetai
                   </a>
                 )}
               </div>
+              {branch.address && (
+                <a
+                  href={branch.googleMapsUrl || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center space-x-1.5 text-xs md:text-sm text-text-gray hover:text-gold transition-colors font-light pt-1 group"
+                >
+                  <MapPin size={13} className="text-gold shrink-0 group-hover:scale-110 transition-transform" />
+                  <span className="underline underline-offset-4 decoration-gold/30 hover:decoration-gold">
+                    {branch.address}
+                  </span>
+                </a>
+              )}
             </div>
 
             {/* Top Professional Luxury Image Slider */}
@@ -238,11 +220,6 @@ export default function BranchDetailsClient({ branch, allBranches }: BranchDetai
                       }`}
                     >
                       <div className="flex items-center space-x-4 w-full sm:w-auto">
-                        {/* Thumbnail */}
-                        <div className="relative w-20 h-20 sm:w-24 sm:h-24 rounded-xl overflow-hidden bg-bg-dark shrink-0">
-                          <RoomVarietyMedia src={room.image} alt={room.name} video={room.video} />
-                        </div>
-
                         {/* Room Info */}
                         <div className="space-y-1">
                           <span className="px-2 py-0.5 text-[8px] uppercase tracking-wider font-semibold rounded bg-gold/15 text-gold inline-block">
@@ -532,7 +509,7 @@ export default function BranchDetailsClient({ branch, allBranches }: BranchDetai
                   disabled={totalSelectedRoomsCount === 0}
                   className="w-full py-4 bg-gold text-bg-dark text-xs uppercase tracking-[0.2em] font-medium rounded-full hover:bg-gold-hover transition-all duration-300 transform active:scale-[0.98] shadow-lg hover:shadow-[0_0_20px_rgba(199,168,109,0.3)] disabled:opacity-40 disabled:pointer-events-none cursor-pointer"
                 >
-                  Book Sanctuary
+                  Book Your Stay
                 </button>
 
                 {/* Micro Copy */}

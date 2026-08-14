@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     siteName: "Rich Inn Palace Hotel",
     images: [
       {
-        url: "/images/photo1.avif",
+        url: "/images/rangon_street/1.jpeg",
         width: 1200,
         height: 630,
         alt: "Rich Inn Palace Chennai Room Tariffs",

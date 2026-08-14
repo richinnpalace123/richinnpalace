@@ -56,10 +56,10 @@ export default function HeroSection() {
           muted
           playsInline
           preload="metadata"
-          poster="/images/photo1.avif"
+          poster="/images/rangon_street/1.jpeg"
           className="w-full h-full object-cover object-center drag-none select-none"
         >
-          <source src="https://res.cloudinary.com/u4u9xqwy/video/upload/q_auto,f_auto/v1786340853/t_nagar_outro.mp4" type="video/mp4" />
+          <source src="https://res.cloudinary.com/u4u9xqwy/video/upload/v1786731982/t_nagar_outro.mp4" type="video/mp4" />
         </video>
         {/* Cinematic Vignette Overlay */}
         <div className="absolute inset-0 bg-gradient-to-t from-bg-dark via-bg-dark/40 to-bg-dark/20" />

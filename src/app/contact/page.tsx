@@ -26,7 +26,7 @@ export const metadata: Metadata = {
     siteName: "Rich Inn Palace Hotel",
     images: [
       {
-        url: "/images/photo1.avif",
+        url: "/images/rangon_street/1.jpeg",
         width: 1200,
         height: 630,
         alt: "Contact Rich Inn Palace Chennai",
@@ -40,7 +40,7 @@ export const metadata: Metadata = {
     title: "Contact & Locations | Rich Inn Palace Chennai",
     description:
       "Get in touch with Rich Inn Palace Chennai. Inquire about rooms, corporate stays, and reservations.",
-    images: ["/images/photo1.avif"],
+    images: ["/images/rangon_street/1.jpeg"],
   },
 };
 
@@ -99,9 +99,14 @@ export default function ContactPage() {
                 <h3 className="font-serif text-xl text-text-offwhite font-light">
                   {branch.title}
                 </h3>
-                <p className="text-xs text-text-gray leading-relaxed font-light">
+                <a
+                  href={branch.googleMapsUrl || "#"}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-text-gray hover:text-gold transition-colors leading-relaxed font-light block underline decoration-gold/30 underline-offset-4 hover:decoration-gold"
+                >
                   {branch.address}
-                </p>
+                </a>
               </div>
 
               <div className="pt-4 border-t border-border-dark/40 space-y-2">

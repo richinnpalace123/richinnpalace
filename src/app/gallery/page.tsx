@@ -24,7 +24,7 @@ export const metadata: Metadata = {
     siteName: "Rich Inn Palace Hotel",
     images: [
       {
-        url: "/images/photo1.avif",
+        url: "/images/rangon_street/1.jpeg",
         width: 1200,
         height: 630,
         alt: "Rich Inn Palace Architecture & Gallery",
@@ -38,23 +38,23 @@ export const metadata: Metadata = {
     title: "Sanctuary Imagery & Architecture | Rich Inn Palace Chennai",
     description:
       "Explore the architectural grandeur and courtyard reflection pools at Rich Inn Palace Chennai.",
-    images: ["/images/photo1.avif"],
+    images: ["/images/rangon_street/1.jpeg"],
   },
 };
 
 const galleryImages = [
   { src: "/images/rangon_street/1.jpeg", title: "Executive Room — Rangon Street", category: "Rangon Street" },
   { src: "/images/pondy_bazaar/1.jpeg", title: "Deluxe Chamber — Pondy Bazar", category: "Pondy Bazar" },
-  { src: "/images/vadapalani/1.jpeg", title: "Suite Quarters — Vadapalani", category: "Vadapalani" },
-  { src: "/images/rangon_street/3.jpeg", title: "Suite Room Living Area", category: "Rangon Street" },
-  { src: "/images/pondy_bazaar/3.jpeg", title: "Boutique Suite Chamber", category: "Pondy Bazar" },
-  { src: "/images/vadapalani/3.jpeg", title: "Master Suite Quarters", category: "Vadapalani" },
-  { src: "/images/rangon_street/5.jpeg", title: "Plush Bedding & Comfort", category: "Rangon Street" },
-  { src: "/images/pondy_bazaar/6.jpeg", title: "Reception & Hospitality Desk", category: "Pondy Bazar" },
-  { src: "/images/vadapalani/6.jpeg", title: "Deluxe Suite Ambience", category: "Vadapalani" },
-  { src: "/images/rangon_street/7.jpeg", title: "Chamber Interiors", category: "Rangon Street" },
-  { src: "/images/pondy_bazaar/8.jpeg", title: "Guest Room Setup", category: "Pondy Bazar" },
-  { src: "/images/vadapalani/8.jpeg", title: "Premium Room Comfort", category: "Vadapalani" },
+  { src: "/images/vadapalani/1.jpg", title: "Suite Quarters — Vadapalani", category: "Vadapalani" },
+  { src: "/images/rangon_street/2.jpeg", title: "Suite Room Living Area", category: "Rangon Street" },
+  { src: "/images/pondy_bazaar/2.jpeg", title: "Boutique Suite Chamber", category: "Pondy Bazar" },
+  { src: "/images/vadapalani/2.jpg", title: "Master Suite Quarters", category: "Vadapalani" },
+  { src: "/images/rangon_street/3.jpeg", title: "Plush Bedding & Comfort", category: "Rangon Street" },
+  { src: "/images/pondy_bazaar/3.jpeg", title: "Reception & Hospitality Desk", category: "Pondy Bazar" },
+  { src: "/images/vadapalani/3.jpg", title: "Deluxe Suite Ambience", category: "Vadapalani" },
+  { src: "/images/rangon_street/4.jpeg", title: "Chamber Interiors", category: "Rangon Street" },
+  { src: "/images/pondy_bazaar/4.jpeg", title: "Guest Room Setup", category: "Pondy Bazar" },
+  { src: "/images/pondy_bazaar/5.jpeg", title: "Premium Room Comfort", category: "Pondy Bazar" },
 ];
 
 export default function GalleryPage() {

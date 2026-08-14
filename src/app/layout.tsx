@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     siteName: "Rich Inn Palace Hotel",
     images: [
       {
-        url: "/images/photo1.avif",
+        url: "/images/rangon_street/1.jpeg",
         width: 1200,
         height: 630,
         alt: "Rich Inn Palace Chennai Luxury Sanctuary Suite",
@@ -59,7 +59,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Rich Inn Palace | Luxury Hotel & Sanctuary Chennai",
     description: "Experience unhurried luxury at Rich Inn Palace Chennai. A quiet retreat of twenty-eight keys and dedicated butler care.",
-    images: ["/images/photo1.avif"],
+    images: ["/images/rangon_street/1.jpeg"],
   },
   robots: {
     index: true,
@@ -127,7 +127,7 @@ export default function RootLayout({
         "@id": `${SITE_CONFIG.domain}/#organization`,
         "name": "Rich Inn Palace",
         "url": SITE_CONFIG.domain,
-        "logo": `${SITE_CONFIG.domain}/images/photo1.avif`,
+        "logo": `${SITE_CONFIG.domain}/images/rangon_street/1.jpeg`,
         "sameAs": [
           "https://instagram.com/richinnpalace"
         ]
