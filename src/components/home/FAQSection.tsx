@@ -39,7 +39,7 @@ const homeFAQs = [
   {
     icon: Phone,
     question: "How can I make an instant reservation or contact the desk?",
-    answer: "You can book directly on our website or contact our 24/7 central desk directly via phone or WhatsApp at +91 98847 62222."
+    answer: "You can book directly on our website or contact our 24/7 central desk directly via phone at +91 98847 62222 or WhatsApp at +91 81899 99227."
   }
 ];
 

@@ -34,7 +34,7 @@ export default function BranchDropdownSelector({
           return (
             <button
               key={branch.id}
-              onClick={() => router.push(`/rooms/${roomSlug}?branch=${branch.id}`)}
+              onClick={() => router.push(`/rooms/${roomSlug}?branch=${branch.id}`, { scroll: false })}
               className={`p-3.5 rounded-xl border text-left transition-all duration-300 flex flex-col justify-between group cursor-pointer w-full focus:outline-none ${
                 isSelected
                   ? "border-gold bg-gold/[0.08] text-text-offwhite shadow-[0_0_15px_rgba(199,168,109,0.12)]"

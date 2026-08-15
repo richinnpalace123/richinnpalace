@@ -203,7 +203,7 @@ export default function ThankYouClient() {
             </a>
 
             <p className="text-[10px] text-text-gray/60 text-center font-light">
-              Connects directly with desk concierge (+91 98847 62222) with your reservation details pre-filled.
+              Connects directly with desk concierge (+91 81899 99227) with your reservation details pre-filled.
             </p>
           </div>
         </div>

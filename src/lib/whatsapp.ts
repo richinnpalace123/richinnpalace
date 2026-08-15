@@ -17,12 +17,12 @@ export interface WhatsAppReservationData {
 }
 
 /**
- * Retrieves the hotel WhatsApp number from environment variables or falls back to the official phone number 9884762222.
+ * Retrieves the hotel WhatsApp number from environment variables or falls back to the official phone number 8189999227.
  */
 export function getHotelWhatsAppNumber(): string {
   const envNumber = process.env.NEXT_PUBLIC_HOTEL_WHATSAPP_NUMBER || "";
   const cleaned = envNumber.replace(/[^0-9]/g, "");
-  return cleaned || "919884762222";
+  return cleaned || "918189999227";
 }
 
 /**

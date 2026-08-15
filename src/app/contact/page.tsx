@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Mail, Phone, MapPin, Clock, ShieldCheck, Map } from "lucide-react";
+import { Mail, Phone, MapPin, Clock, ShieldCheck, Map, MessageSquare } from "lucide-react";
 import { SITE_CONFIG } from "@/lib/config";
 import { branches } from "@/lib/data";
 import ContactForm from "./ContactForm";
@@ -147,9 +147,19 @@ export default function ContactPage() {
                 <div className="flex items-center space-x-4 pt-2">
                   <Phone className="text-gold shrink-0" size={16} />
                   <div>
-                    <span className="text-text-gray/60 block text-[9px] uppercase tracking-wider">Direct Booking Desk &amp; WhatsApp</span>
+                    <span className="text-text-gray/60 block text-[9px] uppercase tracking-wider">Direct Booking Desk (Call)</span>
                     <a href="tel:+919884762222" className="text-text-offwhite hover:text-gold transition-colors font-medium text-sm">
                       +91 98847 62222
+                    </a>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4 pt-2">
+                  <MessageSquare className="text-gold shrink-0" size={16} />
+                  <div>
+                    <span className="text-text-gray/60 block text-[9px] uppercase tracking-wider">WhatsApp Enquiry</span>
+                    <a href="https://wa.me/918189999227" target="_blank" rel="noopener noreferrer" className="text-text-offwhite hover:text-gold transition-colors font-medium text-sm">
+                      +91 81899 99227
                     </a>
                   </div>
                 </div>

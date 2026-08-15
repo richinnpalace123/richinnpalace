@@ -181,6 +181,30 @@ export default function StickyBookingPanel({ roomId, selectedBranchId = "tnagar-
             />
           </div>
         </div>
+
+        {/* Guests Selector */}
+        <div className="flex flex-col space-y-1">
+          <label className="text-[9px] uppercase tracking-[0.2em] text-text-gray font-medium flex items-center">
+            <Users size={10} className="mr-1 text-gold" />
+            Guests Count
+          </label>
+          <select
+            value={guests}
+            onChange={(e) => setGuests(parseInt(e.target.value, 10))}
+            className="bg-bg-dark border border-border-dark rounded-lg p-2 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors cursor-pointer w-full"
+          >
+            <option value={1}>1 Guest</option>
+            <option value={2}>2 Guests</option>
+            <option value={3}>3 Guests</option>
+            <option value={4}>4 Guests</option>
+            <option value={5}>5 Guests</option>
+            <option value={6}>6 Guests</option>
+            <option value={7}>7 Guests</option>
+            <option value={8}>8 Guests</option>
+            <option value={9}>9 Guests</option>
+            <option value={10}>10+ Guests</option>
+          </select>
+        </div>
       </div>
 
       {/* Inclusions summary */}

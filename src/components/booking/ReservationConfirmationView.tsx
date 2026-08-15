@@ -214,7 +214,7 @@ export default function ReservationConfirmationView({
           </a>
 
           <p className="text-[10px] text-text-gray/60 text-center font-light">
-            Connects with your details pre-filled to our Chennai concierge desk (+91 98847 62222).
+            Connects with your details pre-filled to our Chennai concierge desk (+91 81899 99227).
           </p>
         </div>
       </div>

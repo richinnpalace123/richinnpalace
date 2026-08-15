@@ -80,6 +80,7 @@ export default function RoomsClient() {
 
   // Extra bed count
   const [extraBeds, setExtraBeds] = useState<number>(0);
+  const [guests, setGuests] = useState<number>(2);
 
   const handleRoomCountChange = (roomId: string, delta: number) => {
     setSelectedRooms((prev) => {
@@ -140,7 +141,7 @@ export default function RoomsClient() {
       checkout: checkOut,
       extrabeds: String(extraBeds),
       rooms: JSON.stringify(selectedRooms),
-      guests: String(totalSelectedRoomsCount * 2),
+      guests: String(guests),
     });
     router.push(`/checkout?${query.toString()}`);
   };
@@ -428,6 +429,30 @@ export default function RoomsClient() {
                         className="bg-bg-dark border border-border-dark rounded-lg p-2.5 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors w-full [color-scheme:dark]"
                       />
                     </div>
+                  </div>
+
+                  {/* Guests Selector */}
+                  <div className="flex flex-col space-y-1.5">
+                    <label className="text-[9px] uppercase tracking-[0.2em] text-gold font-medium flex items-center">
+                      <Users size={11} className="mr-1.5" />
+                      Guests Count
+                    </label>
+                    <select
+                      value={guests}
+                      onChange={(e) => setGuests(parseInt(e.target.value, 10))}
+                      className="bg-bg-dark border border-border-dark rounded-lg p-2.5 text-xs text-text-offwhite font-sans focus:outline-none focus:border-gold transition-colors cursor-pointer w-full"
+                    >
+                      <option value={1}>1 Guest</option>
+                      <option value={2}>2 Guests</option>
+                      <option value={3}>3 Guests</option>
+                      <option value={4}>4 Guests</option>
+                      <option value={5}>5 Guests</option>
+                      <option value={6}>6 Guests</option>
+                      <option value={7}>7 Guests</option>
+                      <option value={8}>8 Guests</option>
+                      <option value={9}>9 Guests</option>
+                      <option value={10}>10+ Guests</option>
+                    </select>
                   </div>
 
                   {/* Selected Rooms List */}
